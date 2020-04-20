@@ -4,7 +4,7 @@ void printDebug(){
     // USBDevice.attach();delay(2000);
     #endif
     // for F() macro check https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram (convert SRAM to PROGMEM)
-    Serial.print(F("FC: ")); Serial.print(fc);
+    Serial.print(F("\nFC: ")); Serial.print(fc);
     Serial.print(F(", TotalTXms: "));Serial.print(totalTXms);
     Serial.print(F(", days: "));Serial.print(days);
     Serial.print(F(", uptime: "));Serial.println(uptime);

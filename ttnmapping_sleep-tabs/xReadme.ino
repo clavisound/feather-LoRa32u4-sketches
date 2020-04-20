@@ -24,3 +24,5 @@
 // 7c. uptime in days.
 
 // TODO: EEPROM https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram
+
+// BUG EPIC: after one days the days are ++ every TX, hours are ok.

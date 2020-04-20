@@ -1,7 +1,9 @@
 void setupLora()
 {
   // Initialize LoRa
+  #if DEBUGINO == 1
   Serial.print("Starting LoRa...");
+  #endif
   // define multi-channel sending
   lora.setChannel(MULTI);
 
