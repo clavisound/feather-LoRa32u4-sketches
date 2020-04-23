@@ -29,3 +29,9 @@ void updUptime(){
     uptime += millis(); // Ok only for sleepy code (millis are resetting)
   #endif
 }
+
+void GPSsleepTODO(){
+  // Poll for light on.
+  // Wait some ?? time
+  // Power off GPS.
+}

@@ -25,7 +25,7 @@ function Decoder(bytes, port) {
     longitude = [ bytes[8], bytes[9], bytes[10], bytes[13] ];
     //lat = [ bytes[12], bytes[7], bytes[6], bytes[5] ];
     //lon = [ bytes[13], bytes[10], bytes[9], bytes[8] ];
-    decoded.hdop = bytes[11] / 10;
+    decoded.hdop = bytes[11];
     
     decoded.lat = bytesToFloat(lat);
     decoded.lon = bytesToFloat(lon);
@@ -81,6 +81,8 @@ function Decoder(bytes, port) {
     decoded.lat = bytes[5] << 24 | bytes[6] << 16 | bytes[7] << 8 // | bytes[12];
     decoded.lon = bytes[8] << 24 | bytes[9] << 16 | bytes[10] << 8 // | bytes[13];
     decoded.hdop = bytes[11] / 10;
+    decoded.altitude = bytes[14] << 8 | bytes[15];
+    decoded.sats = bytes[12];
   }
   
      if (port === 8) {
@@ -95,9 +97,12 @@ function Decoder(bytes, port) {
       decoded.dBm = (bytes[3] ^ 255) * -1; // XOR with 11111111
     } else { decoded.dBm = bytes[3]; }
      // LSB
+     // payload 5E 01 00 00 00 02 6B A0 01 5E DC FF gives 40.607744, 22.99392 vs 40607792, 22994068
     decoded.latitude = (bytes[5] << 24 | bytes[6] << 16 | bytes[7] << 8 | bytes[12]) / 10e5;
     decoded.longitude = (bytes[8] << 24 | bytes[9] << 16 | bytes[10] << 8 | bytes[13]) / 10e5;
     decoded.hdop = bytes[11] / 10;
+    decoded.altitude = bytes[14] << 8 | bytes[15];
+    decoded.sats = bytes[12];
   }
   
   // Based on https://stackoverflow.com/a/37471538 by Ilya Bursov

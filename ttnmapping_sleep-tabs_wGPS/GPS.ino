@@ -2,55 +2,61 @@ uint8_t checkgps(){
    while (gps.available( Serial1 )) { // Read only one character, so you have to call it FAST.
     fix = gps.read();
     //if (fix.valid.location ) { // EVAL better if fix.hdop < 20?
-    // TODO send on heading event.
       if (fix.hdop < 255000 && fix.hdop > 0 ) { // MAX I have seen 8720 akai 8.7 DOP (NeoGPS multiplies * 1000)
          fixCount++;                            // In balcony with cloudy weather 2000 to 830
          if ( ++fixCount >= 5 ) {
           // TODO: Need to send fix on heading change or time. Whichever comes first.
+          // TODO: Send only once if stopped and restart with starting.
           // TODO: grab best signal? (I need to compare HDOP's)
+          
           FramePort = FRAME_PORT_GPS; // We have GPS data, choose decoder with GPS.
-        // https://github.com/ricaun/esp32-ttnmapper-gps/blob/8d37aa60e96707303ae07ca30366d2982e15b286/esp32-ttnmapper-gps/lmic_Payload.ino#L21
-        //lat = ((fix.latitude() + 90) / 180) * 16777215;
-        //lon = ((fix.longitude() + 180) / 360) * 16777215;
+          
+          // https://github.com/ricaun/esp32-ttnmapper-gps/blob/8d37aa60e96707303ae07ca30366d2982e15b286/esp32-ttnmapper-gps/lmic_Payload.ino#L21
+          //lat = ((fix.latitude() + 90) / 180) * 16777215;
+          //lon = ((fix.longitude() + 180) / 360) * 16777215;
 
-        lat = fix.latitude() * 10E5; // convert float to int. EVAL: BUG for negative numbers?
-        lon = fix.longitude() * 10E5;
+          lat = fix.latitude() * 10E5; // convert float to int. EVAL: BUG in JS decoding in TTN?
+          lon = fix.longitude() * 10E5;
     
-        loraData[5]  = lat >> 24; // LSB
-        loraData[6]  = lat >> 16;
-        loraData[7]  = lat >> 8;
-        loraData[12] = lat;
+          loraData[5]  = lat >> 24; // LSB
+          loraData[6]  = lat >> 16;
+          loraData[7]  = lat >> 8;
+          loraData[12] = lat;
 
-        loraData[8]  = lon >> 24;
-        loraData[9]  = lon >> 16;
-        loraData[10] = lon >> 8;
-        loraData[13] = lon;
+          loraData[8]  = lon >> 24;
+          loraData[9]  = lon >> 16;
+          loraData[10] = lon >> 8;
+          loraData[13] = lon;
 
-        if ( fix.hdop >= 255000 ) {      // If DOP is more than 255, store 25.5
-          loraData[11] = 255;            // I don't want to handle DOP in two bytes. MAX DOP stored is 255000.
-        } else {                         // NeoGPS makes float to integer * 1000. Examples: 8720 = 8.72 DOP, 1960 = 1.96 DOP
-          loraData[11] = fix.hdop / 100; // I divide with 100 to make 8720 = 87.20 HDOP stored as 87. Re-divided in TTN with 10,
-                                         // So... I can fit a 255000 value (DOP 255) in one byte.
-                                         // So... value of 830 (DOP 0.8) TXmitted as 8 and in decoder divided as 0.8
-                                         // EVAL: optimization with divide by two and use less bits?
-        }
-        #if DEBUGINO == 1
-          Serial.println("YES fix");
-        #endif
+          if ( fix.hdop >= 255000 ) {      // If DOP is more than 255, store 25.5
+            loraData[11] = 255;            // I don't want to handle DOP in two bytes. MAX DOP stored is 255000.
+          } else {                         // NeoGPS makes float to integer * 1000. Examples: 8720 (NeoGPS) = 8.72 DOP, 1960 (NeoGPS) = 1.96 DOP
+            loraData[11] = fix.hdop / 100; // I divide with 100 to make 8720 = 87.20 HDOP stored as 87. Re-divided in TTN with 10,
+                                           // So... I can fit a 255000 value (DOP 255) in one byte.
+                                           // So... value of 830 (DOP 0.83) TXmitted as 8 and in decoder divided as 0.8
+                                           // EVAL: optimization with divide by two and use less bits?
+          }
+          loraData[14] = fix.alt.whole >> 8;
+          loraData[15] = fix.alt.whole;
+          loraData[12] = fix.satellites;
+        
+          #if DEBUGINO == 1
+            Serial.println("YES fix");
+          #endif
 
-        #if GPS == 1 & DEBUGINO == 1
-          displayGPS();
-        #endif
-        noFixCount =0; fixCount = 0; // reset the counters for gps
-        FramePort = FRAME_PORT_GPS;
-        checkTXms();
-        return 255;  // EVAL maybe without use.
-      }
-   } else { // No fix
+          #if GPS == 1 & DEBUGINO == 1
+            displayGPS();
+          #endif
+          noFixCount =0; fixCount = 0; // reset the counters for gps
+          FramePort = FRAME_PORT_GPS;
+          checkTXms();
+          return 255;  // EVAL maybe without use.
+      } // end if fixcount
+    } else { // No fix
+     
      #if DEBUGINO == 1
         Serial.print(F("Seeking FIX, UP secs: "));Serial.println(uptime / 1000);
      #endif
-      //noFixCount--;
       
        if ( ++noFixCount <= 10 ) { // Continue if trying less than 5 minutes. (value in seconds)
        #if DEBUGINO == 1
@@ -64,9 +70,8 @@ uint8_t checkgps(){
         #endif
         FramePort = 3;
         checkTXms();
-        noFixCount =0; fixCount = 0; // reset the counters for gps
+        noFixCount =0; fixCount = 0; // reset the counters for gps tracking.
        }
-     
      updUptime();
      return 254; // EVAL maybe without use.
    }
@@ -93,5 +98,13 @@ void displayGPS(){
     Serial.print(F(" Seconds: "));Serial.println( fix.dateTime.seconds );
     Serial.print(F("HDOP: "));Serial.print( fix.hdop );Serial.print(F(", latitude: "));Serial.print( fix.latitude(), 6 );Serial.print(F(", longitude: "));Serial.println( fix.longitude(), 6 );
     Serial.print(F("lat / lon: "));Serial.print( lat ); Serial.print(F(" "));Serial.println( lon );
+    Serial.print(F("alt: "));Serial.print( fix.alt.whole ); Serial.print(F(", sats: "));Serial.println( fix.satellites );
     Serial.print(F("LoRa HDOP: "));Serial.println(loraData[11]);
 }
+
+// commands
+// gps.send_P ( &gpsPort, F("PMTK000") );   // test (to wake up)
+// gps.send_P ( &gpsPort, F("PMTK102") );   // Ephemeris delete
+// gps.send_P ( &gpsPort, F("PMTK103") );   // Ephemeris, almanac, time, Position, delete
+// gps.send_P ( &gpsPort, F("PMTK104") );   // Factory reset
+// gps.send_P ( &gpsPort, F("PMTK161,0") ); // sleep (wake with any byte)

@@ -58,7 +58,7 @@ void transmit(){
     Serial.print("totalTXms: " );Serial.println(totalTXms);
     Serial.print(F("ms transmitted: ")); Serial.println(currentTXms);
     Serial.print(F("HEX: "));
-    for ( uint8_t counter = 0; counter < sizeof(loraData) - 1; counter++ ) {
+    for ( uint8_t counter = 0; counter < sizeof(loraData); counter++ ) {
         Serial.print(loraData[counter], HEX);Serial.print(F(" "));
       }
       Serial.println();

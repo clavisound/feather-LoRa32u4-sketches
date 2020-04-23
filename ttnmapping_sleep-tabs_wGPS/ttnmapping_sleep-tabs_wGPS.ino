@@ -2,8 +2,8 @@
 // #define EU863 // BUG: TinyLoRa.h ignores this. Modify TinyLoRa.h else default is: US902. Other options: EU863, AU915, AS920
 
 #define SF        7     // SF7 to SF12
-#define DEBUGINO  1     // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
-#define PHONEY    1     // 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define DEBUGINO  0     // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
+#define PHONEY    0     // 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 #define CYCLESF   0     // 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
 #define CHAOS     1     // 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +212 program bytes, +33 bytes RAM; [default 1]
 #define LED       2     // 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] [default: 2]
@@ -20,13 +20,13 @@ int8_t txPower = 0;                  // valid values -80, 0-20. For EU max limit
 #if GPS == 1
 #define FRAME_PORT_GPS 8;                // TTN mapper to 8. 7th port for 5 floats precision.
   uint8_t FramePort = FRAME_PORT_GPS;    // port with GPS data
-  uint8_t loraData[13] = {};             // bytes to send
+  uint8_t loraData[16] = {};             // bytes to send
 #else
   uint8_t FramePort = 3;                 // port without GPS
   uint8_t loraData[5] = {};              // bytes to send. 5 = 5bytes
 #endif
 
-uint16_t fc = 10000;                     // framecounter. We need this if we sleep. In that case lora module forgets everything. TODO store in EEPROM.
+uint16_t fc = 150;                     // framecounter. We need this if we sleep. In that case lora module forgets everything. TODO store in EEPROM.
 
 // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5'
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
@@ -39,22 +39,19 @@ uint32_t const secondsSleep = 1800;
 
 #define VBATPIN A9 // battery pin to measure voltage
 
-// ERASE THIS
-#if GPS == 1 & DEBUGINO == 0
-  #error Still testing. Enable DEBUGINO, or Serial dies from sleep.
-#endif
-
 #if GPS == 1
   #include <NMEAGPS.h>
   #include <GPSport.h>
-  #define GPSSLEEP A4 // To put gps to sleep.
+  #define GPS_SLEEP A4 // To put gps to sleep.
   NMEAGPS  gps;
   gps_fix  fix;
 
   uint32_t lat, lon;    // 32 bits
+  uint16_t altitude;      // 16 bits Everest is >8.000meters
   uint8_t speed;        // TODO: divide by 3 to have max speed of 90 with 5 bits
   uint8_t heading;      // TODO: divide by 6 to fit in 6bits
   uint8_t hdop;         // > 20 = 20 x 5 meters = 100m
+  uint8_t sats;         // satellites
   uint8_t fixCount;     //
   uint16_t noFixCount;  // in cloudy balcony fix after 70 seconds.
 #endif
@@ -108,13 +105,12 @@ void setup(){
   #endif
   
   #if GPS == 1
-    pinMode(GPSSLEEP, OUTPUT); // use GPSSLEEP pin as output. HIGH to sleep.
+    pinMode(GPS_SLEEP, OUTPUT); // use GPS_SLEEP pin as output. HIGH to sleep.
     gpsPort.begin(9600);
 
-    Serial.println("command");
-    // gps.send_P ( &gpsPort, F("PMTK000*32")); // EVAL commands are ignored?
-    // gps.send_P ( &gpsPort, F("PMTK220,30000") ); //update 1time in 30s
-    // gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GCA
+    Serial.println("commands");
+    // gps.send_P ( &gpsPort, F("PMTK220,3000") ); //update 1time in 3s (value in ms)
+    gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GCA (not evaluated.. EVAL)
   #endif
 
 #define STARTDELAY 2 // seconds

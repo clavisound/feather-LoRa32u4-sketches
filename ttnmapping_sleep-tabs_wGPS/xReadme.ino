@@ -26,17 +26,21 @@
 // TODOs
 // EEPROM https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram Wear after ?? writes
 // ACCEL
-// Button
-// Buzzer
+// Button (interrupt code)
+// Buzzer (resitor)
 // GPS
-// Reed switch
+// Reed switch (with magnet)
 // BLE
 
 // ChangeLog
-// [solved] BUG (EPIC): after one day the days are ++ every TX, hours are ok. Watchdog was resetting the millis.
+// [solved] BUG (EPIC): after one day the days are ++ every TX. Hours where ok. Watchdog was resetting the millis.
 
 // notes
 // GPS: first boot of Adafruit featherwing 0,2080-01-06 00:01:21.790,,,0,0,,0,327,0,12477,
-// GPS: Polling with NeoGPS, 23-apr-2020
+// GPS Done: Polling with NeoGPS, 23-apr-2020
 // GPS TODO: get best fix?, 23-apr-2020.
 // GPS TODO: If heading changes send message, 23-apr-2020
+// GPS TODO: After stop send only once, 23-apr-2020
+// GPS TODO: When sleep if LED, is on, it stays on 23-apr-2020.
+// GPS TODO: EVAL power consumption, 23-apr-2020.
+// GPS TODO: EVAL power off with pin, 23-apr-2020.
