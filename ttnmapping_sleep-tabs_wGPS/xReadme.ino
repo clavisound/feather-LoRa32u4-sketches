@@ -23,7 +23,20 @@
 // 7b. TX time in seconds.
 // 7c. uptime in days.
 
-// TODO: EEPROM https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram
+// TODOs
+// EEPROM https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram Wear after ?? writes
+// ACCEL
+// Button
+// Buzzer
+// GPS
+// Reed switch
+// BLE
 
 // ChangeLog
 // [solved] BUG (EPIC): after one day the days are ++ every TX, hours are ok. Watchdog was resetting the millis.
+
+// notes
+// GPS: first boot of Adafruit featherwing 0,2080-01-06 00:01:21.790,,,0,0,,0,327,0,12477,
+// GPS: Polling with NeoGPS, 23-apr-2020
+// GPS TODO: get best fix?, 23-apr-2020.
+// GPS TODO: If heading changes send message, 23-apr-2020

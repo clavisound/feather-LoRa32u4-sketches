@@ -19,7 +19,7 @@ void checkTXms (){
         uint16_t times = ((DAY - lastTXtime) / 1000) / 8; // sleep for a day.
         for ( times > 0; times--; ) {
             uint16_t sleepMS = Watchdog.sleep(8000);  // Sleep for up to 8 seconds
-            uptime += sleepMS;
+            uptime += sleepMS; // we need this because sleep resets millis.
         }
       #endif
       

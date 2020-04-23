@@ -1,6 +1,7 @@
 // ttnmapping with static SF or variabLEle SF. Made by clavisound started from: https://learn.adafruit.com/the-things-network-for-feather/using-a-feather-32u4
 // #define EU863 // BUG: TinyLoRa.h ignores this. If not defined default is: US902. Other options: EU863, AU915, AS920
 
+#define SF 9        // SF7 to SF12
 #define DEBUGINO 0  // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
 #define PHONEY 0    // 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 #define CYCLESF 0   // 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
@@ -20,12 +21,10 @@ uint16_t fc = 0;          // framecounter. We need this if we sleep. In that cas
 
 // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5'
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
-uint32_t const secondsSleep = 600;
+uint32_t const secondsSleep = 3600;
 // ** THIS IS THE LIMIT OF THIS PROGRAM **, DO NOT USE LESS THAN 10 SECONDS!
 // uint32_t const secondsSleep = 10; // sleep for 10 seconds.
 
-//#define DAY 21600000 // = one day is 6 hours.
-//#define TXMS 3200 // = 4seconds
 #define DAY 86400000 // = day in ms. Use to comply with TTN policy
 #define TXMS 29000   // = TTN limit 30.000ms (30 seconds) per day.
 
@@ -57,10 +56,7 @@ uint16_t randMS; // used to random sleep
 
 #if LED > 0
    /* To have every 5 sec blink we divide the secondsSleep with 5 secs and we find the number of blinks
-   * 
-   *  Example: 100 seconds / 5 = 20 blinks
-   *  Example: 600 seconds / 5 = 120 blinks.
-   *  
+   *  Example: 100 seconds / 5 = 20 blinks, another example: 600 seconds / 5 = 120 blinks.
    */
   uint16_t const blinks = secondsSleep / 8; // 8 = seconds maximum of watchdog
 #endif
@@ -71,8 +67,6 @@ uint16_t randMS; // used to random sleep
 uint32_t lastTXtime;
 
 void setup(){
-  delay(2000);
-
   #if USBSERIAL == 1 & DEBUGINO == 1
     Serial.begin(9600);
   #endif
@@ -83,10 +77,11 @@ void setup(){
     pinMode(LED_BUILTIN, OUTPUT); // Initialize pin LED_BUILTIN as an output
   #endif
 
+#define STARTDELAY 12 // seconds
   #if LED == 0
-    delay(6000); // wait 6 seconds (value in ms) before sending 1st message
+    delay(STARTDELAY * 1000); // wait (value in ms) before sending 1st message
   #else
-    blinkLed(6, 500, 1000); // X times for Y duration and Z pause. (example is: 12, 250, 1000) aka 12 times, blink for 250 ms puse for 1 second.  
+    blinkLed(STARTDELAY, 500, 1000); // STARTDELAY times for Y duration and Z pause. (example is: 12, 250, 1000) aka 12 times, blink for 250 ms puse for 1 second.  
   #endif
 
   // QUESTION: Why I can't use the variable from second .cpp or .ino?

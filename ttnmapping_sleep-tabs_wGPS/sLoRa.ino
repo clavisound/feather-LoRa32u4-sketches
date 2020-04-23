@@ -30,7 +30,7 @@ void setupLora()
   #elif SF == 10
    lora.setDatarate(SF10BW125);
   #elif SF == 9
-   lora.setDatarate(SF9BW125);
+   lora.setDatarate(SF9W125);
   #elif SF == 8
    lora.setDatarate(SF8BW125);
   #else
