@@ -44,7 +44,7 @@
 // GPS TODO: If heading changes send message, 23-apr-2020
 // GPS TODO: After stop send only once and restart with km/h >= 3, 23-apr-2020
 // GPS TODO: When sleep if LED, is on, it stays on 23-apr-2020.
-// GPS TODO: EVAL power consumption with pin, sleep, auto-sleep, 23-apr-2020.
+// GPS TODO: EVAL power consumption with pin, sleep, auto-sleep, 23-apr-2020. Without GPS OFF = 400 mA in 14 hours TX every 30m.
 // GPS TODO: Compare 24bits loc with 16bits, 23-apr-2020
 // GPS TODO: bike payload, 23-apr-2020
 // GPS TODO: distance? 23-apr-2020

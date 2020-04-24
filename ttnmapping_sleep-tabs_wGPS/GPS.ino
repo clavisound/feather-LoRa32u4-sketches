@@ -59,7 +59,7 @@ uint8_t checkgps(){
         Serial.print(F("Seeking FIX, UP secs: "));Serial.println(uptime / 1000);
      #endif
       
-       if ( ++noFixCount <= 10 ) { // Continue if trying less than 5 minutes. (value in seconds)
+       if ( ++noFixCount <= 120 ) { // Continue if trying less than 2 minutes. (value in seconds)
        #if DEBUGINO == 1
          Serial.println("No fix");
          displayGPS();

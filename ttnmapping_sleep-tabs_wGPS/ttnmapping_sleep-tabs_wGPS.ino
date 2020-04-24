@@ -26,7 +26,7 @@ int8_t txPower = 14;                  // valid values -80, 0-20. For EU max limi
   uint8_t loraData[5] = {};              // bytes to send. 5 = 5bytes
 #endif
 
-uint16_t fc = 150;                     // framecounter. We need this if we sleep. In that case lora module forgets everything. TODO store in EEPROM.
+uint16_t fc = 300;                     // framecounter. We need this if we sleep. In that case lora module forgets everything. TODO store in EEPROM.
 
 // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5'
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
@@ -47,7 +47,7 @@ uint32_t const secondsSleep = 1800;
   gps_fix  fix;
 
   uint32_t lat, lon;    // 32 bits
-  uint16_t altitude;      // 16 bits Everest is >8.000meters
+  uint16_t altitude;    // 16 bits Everest is >8.000meters
   uint8_t speed;        // TODO: divide by 3 to have max speed of 90 with 5 bits
   uint8_t heading;      // TODO: divide by 6 to fit in 6bits
   uint8_t hdop;         // > 20 = 20 x 5 meters = 100m
@@ -112,7 +112,7 @@ void setup(){
     gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GCA (not evaluated.. EVAL)
   #endif
 
-#define STARTDELAY 3 // seconds
+#define STARTDELAY 12 // seconds
   #if LED == 0
     delay(STARTDELAY * 1000); // wait (value in ms) before sending 1st message
   #else
