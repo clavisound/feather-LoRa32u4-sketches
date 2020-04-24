@@ -1,5 +1,5 @@
 #feather-LoRa32u4-sketches
-Here you can find two sketches for [http://ttnmapper.org](TTNmapper). One to use Adafruit Feather LoRa 32u4 with smartphone and one with
+Here you can find two sketches for [TTNmapper](http://ttnmapper.org). One to use Adafruit Feather LoRa 32u4 with smartphone and one with
 FeatherWing GPS.
 
 ##You need in both
@@ -22,7 +22,7 @@ FeatherWing GPS.
 4. Make integration with TTNmapper.
 5. copy the appropriate decodings to the console.thethingsnetwork.org
 6. All neccessary variables are in first tab.
-7. Connect TX from [https://www.adafruit.com/product/3133](Adafruit GPS) to RX in [https://www.adafruit.com/product/3078](feather)
+7. Connect TX from [Adafruit GPS](https://www.adafruit.com/product/3133) to RX in [Feather 32u4 - LoRa](https://www.adafruit.com/product/3078)
 8. Connect RX from Adafruit GPS to TX in feather
 9. Connect Power and GND.
 10. Connect EN pin from Adafruit GPS to A4 pin (feather 32u4)
