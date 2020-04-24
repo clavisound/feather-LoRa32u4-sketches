@@ -9,6 +9,8 @@ void blinkLed(int16_t times, uint16_t duration, uint16_t pause){ // x, ms, ms
       uptime += sleepMS; // we need this because Watchdog reset millis.
     #endif
   }
+  
+  GPSwake(); // end waiting, GPS ON
 }
 
 void setLed(int8_t times){
@@ -28,10 +30,4 @@ void updUptime(){
   #else
     uptime += millis(); // Ok only for sleepy code (millis are resetting)
   #endif
-}
-
-void GPSsleepTODO(){
-  // Poll for light on.
-  // Wait some ?? time
-  // Power off GPS.
 }

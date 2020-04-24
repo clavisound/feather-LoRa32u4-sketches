@@ -7,8 +7,8 @@ void printDebug(){
     Serial.print(F("\nFC: ")); Serial.print(fc);
     Serial.print(F(", TotalTXms: "));Serial.print(totalTXms);
     Serial.print(F(", days: "));Serial.print(days);
-    Serial.print(F(", millis: "));Serial.print(millis());
-    Serial.print(F(", uptime: "));Serial.println(uptime);
+    Serial.print(F(", millis: "));Serial.println(millis());
+    //Serial.print(F(", uptime: "));Serial.println(uptime);
     //Serial.print(F(", millis - uptime: "));Serial.println(millis() - uptime);
     Serial.print(F("previousTX was on s: "));Serial.println(lastTXtime / 1000);
     Serial.print(F("uptime in hours: "));Serial.println(millis() / 1000 / 3600);

@@ -25,22 +25,27 @@
 
 // TODOs
 // EEPROM https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram Wear after ?? writes
-// ACCEL
-// Button (interrupt code)
-// Buzzer (resitor)
-// GPS
-// Reed switch (with magnet)
-// BLE
+// ACCEL       - Byt + code
+// Button      - Code + resistor (interrupt code)
+// Buzzer      - Choose resistor
+// GPS         - InProgress
+// Reed switch - Test with magnet
+// BLE         - Installation + code
 
 // ChangeLog
 // [solved] BUG (EPIC): after one day the days are ++ every TX. Hours where ok. Watchdog was resetting the millis.
 
 // notes
 // GPS: first boot of Adafruit featherwing 0,2080-01-06 00:01:21.790,,,0,0,,0,327,0,12477,
-// GPS Done: Polling with NeoGPS, 23-apr-2020
-// GPS TODO: get best fix?, 23-apr-2020.
+// GPS [Done] 23-apr-2020: Polling GPS with NeoGPS
+// GPS [Done] 24-apr-2020: TTNmapper payload, 23-apr-2020
+// GPS [Done] 24-apr-2020: Send some data to TTNmapper, 23-apr-2020
+// GPS TODO: get best fix? (with HDOP) - I think no, better with heading, 23-apr-2020.
 // GPS TODO: If heading changes send message, 23-apr-2020
-// GPS TODO: After stop send only once, 23-apr-2020
+// GPS TODO: After stop send only once and restart with km/h >= 3, 23-apr-2020
 // GPS TODO: When sleep if LED, is on, it stays on 23-apr-2020.
-// GPS TODO: EVAL power consumption, 23-apr-2020.
-// GPS TODO: EVAL power off with pin, 23-apr-2020.
+// GPS TODO: EVAL power consumption with pin, sleep, auto-sleep, 23-apr-2020.
+// GPS TODO: Compare 24bits loc with 16bits, 23-apr-2020
+// GPS TODO: bike payload, 23-apr-2020
+// GPS TODO: distance? 23-apr-2020
+// GPS [Done] 24-apr-2020: Power off GPS with two methods. Pin and Command.

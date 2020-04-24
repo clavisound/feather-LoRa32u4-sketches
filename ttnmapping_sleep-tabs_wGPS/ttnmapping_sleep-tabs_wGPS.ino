@@ -8,17 +8,17 @@
 #define CHAOS     1     // 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +212 program bytes, +33 bytes RAM; [default 1]
 #define LED       2     // 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] [default: 2]
 #define GPS       1     // 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
-#define USBSERIAL 0     // 1 = to enable serial, 0 to save battery.
+//#define USBSERIAL 0     // 1 = to enable serial, 0 to save battery.
 
 #include <TinyLoRa.h>
 #include <SPI.h>
 #include <Adafruit_SleepyDog.h>
 
 // Data Packet to Send to TTNN
-int8_t txPower = 0;                  // valid values -80, 0-20. For EU max limit is 14dBm
+int8_t txPower = 14;                  // valid values -80, 0-20. For EU max limit is 14dBm
 
 #if GPS == 1
-#define FRAME_PORT_GPS 8;                // TTN mapper to 8. 7th port for 5 floats precision.
+#define FRAME_PORT_GPS 7;                // TTN mapper to 8. 7th port for 5 floats precision.
   uint8_t FramePort = FRAME_PORT_GPS;    // port with GPS data
   uint8_t loraData[16] = {};             // bytes to send
 #else
@@ -78,13 +78,13 @@ uint8_t  days;        // byte is for 255 days, unsigned 16bits are ok for 184 ye
 uint8_t vbat;         // raw voltage for battery range from 480 - 680 aka ~200
 uint8_t vbatC;        // battery level 0-3 (0%, 30%, 60%, 90%)
 
-uint16_t randMS;      // used to add some randomness in sleep
+uint16_t randMS;      // add randomness in wakeup / transmission time.
 
 #if LED > 0
    /* To have every 5 sec blink we divide the secondsSleep with 5 secs and we find the number of blinks
    *  Example: 100 seconds / 5 = 20 blinks, another example: 600 seconds / 5 = 120 blinks.
    */
-  uint16_t const blinks = secondsSleep / 8; // 8 = seconds maximum of watchdog
+  uint16_t const blinks = secondsSleep / 8; // blink every 8 seconds (maximum of watchdog).
 #endif
 
 // after 24 hours (86.400.000 millis), we can re-send messages if we hit the wall (TTN rule)
@@ -93,7 +93,6 @@ uint16_t randMS;      // used to add some randomness in sleep
 uint32_t lastTXtime;
 
 void setup(){
-//  delay(2000);
 
   #if USBSERIAL == 1 & DEBUGINO == 1
     Serial.begin(9600);
@@ -113,7 +112,7 @@ void setup(){
     gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GCA (not evaluated.. EVAL)
   #endif
 
-#define STARTDELAY 2 // seconds
+#define STARTDELAY 3 // seconds
   #if LED == 0
     delay(STARTDELAY * 1000); // wait (value in ms) before sending 1st message
   #else

@@ -4,7 +4,7 @@ uint8_t checkgps(){
     //if (fix.valid.location ) { // EVAL better if fix.hdop < 20?
       if (fix.hdop < 255000 && fix.hdop > 0 ) { // MAX I have seen 8720 akai 8.7 DOP (NeoGPS multiplies * 1000)
          fixCount++;                            // In balcony with cloudy weather 2000 to 830
-         if ( ++fixCount >= 5 ) {
+         if ( ++fixCount >= 1 ) {
           // TODO: Need to send fix on heading change or time. Whichever comes first.
           // TODO: Send only once if stopped and restart with starting.
           // TODO: grab best signal? (I need to compare HDOP's)
@@ -41,7 +41,7 @@ uint8_t checkgps(){
           loraData[12] = fix.satellites;
         
           #if DEBUGINO == 1
-            Serial.println("YES fix");
+            Serial.println(F("YES fix"));
           #endif
 
           #if GPS == 1 & DEBUGINO == 1
@@ -49,8 +49,9 @@ uint8_t checkgps(){
           #endif
           noFixCount =0; fixCount = 0; // reset the counters for gps
           FramePort = FRAME_PORT_GPS;
+
+          GPSsleep(); // Close GPS we are done
           checkTXms();
-          return 255;  // EVAL maybe without use.
       } // end if fixcount
     } else { // No fix
      
@@ -65,15 +66,18 @@ uint8_t checkgps(){
         #endif
        } else { // give up
         #if DEBUGINO == 1
-         Serial.print("No fix: GIVE UP secs: ");Serial.println(uptime / 1000);
+         Serial.print(F("No fix: GIVE UP secs: "));Serial.println(uptime / 1000);
          displayGPS();
         #endif
         FramePort = 3;
+
+        GPSsleep(); // Close GPS we are done
         checkTXms();
-        noFixCount =0; fixCount = 0; // reset the counters for gps tracking.
+        
+        noFixCount =0;
+        fixCount = 0; // reset the counters for gps tracking.
        }
      updUptime();
-     return 254; // EVAL maybe without use.
    }
 
   /*
@@ -108,3 +112,30 @@ void displayGPS(){
 // gps.send_P ( &gpsPort, F("PMTK103") );   // Ephemeris, almanac, time, Position, delete
 // gps.send_P ( &gpsPort, F("PMTK104") );   // Factory reset
 // gps.send_P ( &gpsPort, F("PMTK161,0") ); // sleep (wake with any byte)
+
+void GPSsleep(){
+  /* *SOMETIMES* the light stays ON after power OFF.
+   * 
+   * The right procedure NOT IMPLEMENTED is here
+  
+  // Poll for led ON (is hardwired to FIX pin)
+  // Wait some ?? time
+  // Shutdown GPS
+  
+  *
+  */
+  
+  #if DEBUGINO == 1
+    Serial.println(F("GPS OFF"));
+  #endif
+  digitalWrite(GPS_SLEEP, HIGH); // Power OFF GPS.
+  // gps.send_P ( &gpsPort, F("PMTK161,0") ); // sleep (wake with any byte)
+}
+
+void GPSwake(){
+  #if DEBUGINO == 1
+    Serial.println(F("GPS ON"));
+  #endif
+  digitalWrite(GPS_SLEEP, LOW); // Power ON GPS.
+  // gps.send_P ( &gpsPort, F("PMTK000") );   // test (to wake up
+}

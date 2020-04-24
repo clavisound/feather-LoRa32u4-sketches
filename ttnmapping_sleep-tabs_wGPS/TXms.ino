@@ -24,6 +24,7 @@ void checkTXms (){
       #endif
       
       totalTXms = 0; // we have new day, reset the TX counter
+      GPSwake();     // GPS ON
       return;
   }
   #if DEBUGINO == 1
