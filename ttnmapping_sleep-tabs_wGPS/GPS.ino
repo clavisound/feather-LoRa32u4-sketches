@@ -18,10 +18,10 @@ uint8_t checkgps(){
           lat = fix.latitude() * 10E5; // convert float to int. EVAL: BUG in JS decoding in TTN?
           lon = fix.longitude() * 10E5;
     
-          loraData[5]  = lat >> 24; // LSB
+          loraData[5]  = lat >> 24; // MSB
           loraData[6]  = lat >> 16;
           loraData[7]  = lat >> 8;
-          loraData[12] = lat;
+          loraData[12] = lat;       // LSB
 
           loraData[8]  = lon >> 24;
           loraData[9]  = lon >> 16;

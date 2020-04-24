@@ -78,8 +78,8 @@ function Decoder(bytes, port) {
       decoded.dBm = (bytes[3] ^ 255) * -1; // XOR with 11111111
     } else { decoded.dBm = bytes[3]; }
      // LSB
-    decoded.lat = bytes[5] << 16 | bytes[6] << 8 | bytes[7];
-    decoded.lon = bytes[8] << 8 | bytes[9] << 8 | bytes[10];
+    decoded.lat = (bytes[5] << 24 | bytes[6] << 16 | bytes[7] << 8 ) / 10e5;
+    decoded.lon = (bytes[8] << 24 | bytes[9] << 16 | bytes[10] << 8 )  / 10e5;
     decoded.hdop = bytes[11] / 10;
     decoded.altitude = bytes[14] << 8 | bytes[15];
     decoded.sats = bytes[12];
