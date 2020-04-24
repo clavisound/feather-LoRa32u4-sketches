@@ -2,6 +2,17 @@
 Here you can find two sketches for [TTNmapper](http://ttnmapper.org). One to use Adafruit Feather LoRa 32u4 with smartphone and one with
 FeatherWing GPS.
 
+What is supported:
+1. Deep sleep. Map for one month (maybe more) with 350mA battery.
+2. GPS sleep.
+3. Cycle SF
+4. Cycle Power
+5. Respect to TTN limits (30 seconds per day)
+6. Randomness to vary transmissions (to avoid colissions with other static nodes)
+7. Info via LED
+8. Debugging via Serial (I hope you will not need this  - it also disables Deep Sleep)
+9. PHONEY mode. (for debugging - no transmission)
+
 ## You need in both
 1. Modify `TinyLoRa.h` according to your region!
 
