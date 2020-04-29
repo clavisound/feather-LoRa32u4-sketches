@@ -25,7 +25,7 @@
 
 // TODOs
 // EEPROM https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram Wear after ?? writes
-// ACCEL       - Byt + code
+// ACCEL       - Byte + code
 // Button      - Code + resistor (interrupt code)
 // Buzzer      - Choose resistor
 // GPS         - InProgress
@@ -36,7 +36,7 @@
 // [solved] BUG (EPIC): after one day the days are ++ every TX. Hours where ok. Watchdog was resetting the millis.
 
 // notes
-// GPS: first boot of Adafruit featherwing 0,2080-01-06 00:01:21.790,,,0,0,,0,327,0,12477,
+// GPS [Done] 22-apr-2020: first boot of Adafruit featherwing 0,2080-01-06 00:01:21.790,,,0,0,,0,327,0,12477,
 // GPS [Done] 23-apr-2020: Polling GPS with NeoGPS
 // GPS [Done] 24-apr-2020: TTNmapper payload, 23-apr-2020
 // GPS [Done] 24-apr-2020: Send some data to TTNmapper, 23-apr-2020
@@ -44,8 +44,16 @@
 // GPS TODO: If heading changes send message, 23-apr-2020
 // GPS TODO: After stop send only once and restart with km/h >= 3, 23-apr-2020
 // GPS TODO: When sleep if LED, is on, it stays on 23-apr-2020.
-// GPS TODO: EVAL power consumption with pin, sleep, auto-sleep, 23-apr-2020. Without GPS OFF = 400 mA in 14 hours TX every 30m.
 // GPS TODO: Compare 24bits loc with 16bits, 23-apr-2020
 // GPS TODO: bike payload, 23-apr-2020
 // GPS TODO: distance? 23-apr-2020
 // GPS [Done] 24-apr-2020: Power off GPS with two methods. Pin and Command.
+// GPS [Done] 28,apr,2020: latitude payloads testing 10E5 vs 100000 e.t.c.,
+
+// GPS WIP: EVAL power consumption with pin, sleep, auto-sleep, 23-apr-2020 
+// GPS ON                              = 400 mA in 14 hours TX every 30m. 23-apr-2020
+// GPS OFF with pin > seek two minutes =  40 mA in 17 hours TX every 30m. 24-apr-2020
+// GPS OFF with TX  > seek two minutes = ??  mA in ?? hours TX every 30m.
+// GPS AlwaysLocate > seek two minutes = ??  mA in ?? hours TX every 30m.
+
+// NiMH LSD = 40mA in 24hours.

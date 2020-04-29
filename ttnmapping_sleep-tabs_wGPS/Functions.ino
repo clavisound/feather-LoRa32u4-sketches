@@ -9,7 +9,6 @@ void blinkLed(int16_t times, uint16_t duration, uint16_t pause){ // x, ms, ms
       uptime += sleepMS; // we need this because Watchdog reset millis.
     #endif
   }
-  
   GPSwake(); // end waiting, GPS ON
 }
 

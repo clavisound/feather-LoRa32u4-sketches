@@ -4,12 +4,15 @@ void transmit(){
   updUptime();
   
   if ( uptime - lastTXtime >= DAY ) { // we have a new day
-    days++;        // one day more uptime.
-    totalTXms = 0; // reset TX counter, we have a new day.
-    uptime = 0;    // reset uptime. There is a better solution?
+    days++;                           // one day more uptime.
+    totalTXms = 0;                    // reset TX counter, we have a new day.
+    uptime = 0;                       // reset uptime. There is a better solution?
   }
 
-   // prepare data for ttn. Lower bits 1-2, are for batC, low bits 3-7 are for TX seconds. Spare (last) bit for TODO (button)
+   // prepare data for ttn. Lower bits 1-2, are for batC,
+   // low bits 3-7 are for TX seconds. Spare (last) bit for TODO (button)
+
+   // totalTXms needs 5 bits (DEC 31)
    loraData[1] = ((totalTXms / 1000 ) << 2) | vbatC; // Make room for 2 bits. Add the bits 1+2 (aka: OR vbatC)
    loraData[2] = days;                               // max 255 days.
    loraData[3] = txPower;                            // TODO -1 to 20dBm, not -80 to 20
@@ -29,7 +32,7 @@ void transmit(){
     Serial.print("\nTimeu: " );Serial.print(timeu);Serial.print(", randMS: " );Serial.println(randMS);
   #endif
 
-  startTXms = millis(); // count transmission duration. This is start. // DONT MOVE
+  startTXms = millis(); // count transmission duration. This is start. DONT MOVE
   #if PHONEY == 1
     delay(680); // emulate SF11
   #else
@@ -38,8 +41,10 @@ void transmit(){
 
   // Store the time of last TX.
   // Bear in mind that when we have DAY>0 we have to calculate the modulo.
-  // lastTXtime = uptime % DAY; // valid for delay without sleep.
-  lastTXtime = millis(); // valid for sleep (millis are resetting)
+  #if DEBUGINO == 1
+   lastTXtime = uptime % DAY; // valid for delay without sleep.
+  #endif
+  lastTXtime = millis();        // valid for sleep (millis are resetting)
 
   fc++;
 

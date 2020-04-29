@@ -8,7 +8,6 @@
 #define CHAOS     1     // 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +212 program bytes, +33 bytes RAM; [default 1]
 #define LED       2     // 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] [default: 2]
 #define GPS       1     // 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
-//#define USBSERIAL 0     // 1 = to enable serial, 0 to save battery.
 
 #include <TinyLoRa.h>
 #include <SPI.h>
@@ -18,53 +17,50 @@
 int8_t txPower = 14;                  // valid values -80, 0-20. For EU max limit is 14dBm
 
 #if GPS == 1
-#define FRAME_PORT_GPS 7;                // TTN mapper to 8. 7th port for 5 floats precision.
+#define FRAME_PORT_GPS 8;                // TTN mapper to 8. 7th port for 5 floats precision.
   uint8_t FramePort = FRAME_PORT_GPS;    // port with GPS data
-  uint8_t loraData[16] = {};             // bytes to send
+  uint8_t loraData[17] = {};             // bytes to send
 #else
   uint8_t FramePort = 3;                 // port without GPS
   uint8_t loraData[5] = {};              // bytes to send. 5 = 5bytes
 #endif
 
-uint16_t fc = 300;                     // framecounter. We need this if we sleep. In that case lora module forgets everything. TODO store in EEPROM.
+uint16_t fc = 1000;                     // framecounter. We need this if we sleep. In that case lora module forgets everything. TODO store in EEPROM.
 
 // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5'
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
-uint32_t const secondsSleep = 1800;
+uint32_t secondsSleep = 180;
 // ** THIS IS THE LIMIT OF THIS PROGRAM **, DO NOT USE LESS THAN 10 SECONDS!
 // uint32_t const secondsSleep = 10; // sleep for 10 seconds.
 
 #define DAY  86400000 // = day in ms. Use to comply with TTN policy
-#define TXMS 29000    // = TTN limit 30.000ms (30 seconds) per day.
+#define TXMS 29500    // = TTN limit 30.000ms (30 seconds) per day.
 
 #define VBATPIN A9 // battery pin to measure voltage
 
 #if GPS == 1
   #include <NMEAGPS.h>
   #include <GPSport.h>
-  #define GPS_SLEEP A4 // To put gps to sleep.
+  #define  GPS_SLEEP A4 // Pin connected to EN pin of GPS to SLEEP / WAKE
   NMEAGPS  gps;
   gps_fix  fix;
 
   uint32_t lat, lon;    // 32 bits
-  uint16_t altitude;    // 16 bits Everest is >8.000meters
-  uint8_t speed;        // TODO: divide by 3 to have max speed of 90 with 5 bits
-  uint8_t heading;      // TODO: divide by 6 to fit in 6bits
-  uint8_t hdop;         // > 20 = 20 x 5 meters = 100m
-  uint8_t sats;         // satellites
-  uint8_t fixCount;     //
+  uint16_t altitude;    // 16 bits. Everest is >8.000meters
+  uint8_t  speed;       
+  //uint8_t  oldSpeed;     
+  uint8_t  heading;     
+  //uint8_t  oldHeading;  
+  uint8_t  hdop;        // > 20 = 20 x 5 meters = 100m
+  uint8_t  sats;        // satellites
+  uint8_t  fixCount;    //
   uint16_t noFixCount;  // in cloudy balcony fix after 70 seconds.
-#endif
-
-// we need USBSERIAL if we want debugging.
-#if DEBUGINO == 1
-  #define USBSERIAL 1
 #endif
        
 // Pinout for Adafruit Feather 32u4 LoRa
 TinyLoRa lora = TinyLoRa(7, 8, 4);
 
-uint32_t uptime = 0;   // uptime in ms
+uint32_t uptime;   // uptime in ms
 
 /* don't transmit more than 30 seconds per day. */
 // variables to calculate that.
@@ -94,7 +90,7 @@ uint32_t lastTXtime;
 
 void setup(){
 
-  #if USBSERIAL == 1 & DEBUGINO == 1
+  #if DEBUGINO == 1
     Serial.begin(9600);
     while (! Serial); // don't start unless we have serial connection
   #endif
@@ -107,12 +103,17 @@ void setup(){
     pinMode(GPS_SLEEP, OUTPUT); // use GPS_SLEEP pin as output. HIGH to sleep.
     gpsPort.begin(9600);
 
-    Serial.println("commands");
-    // gps.send_P ( &gpsPort, F("PMTK220,3000") ); //update 1time in 3s (value in ms)
-    gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GCA (not evaluated.. EVAL)
+    // ATTENTION This setting is changing the wait times for fix in GPS.ino
+    // If you change here the value, you may want to change the values noFixCount
+    // in GPS.ino fixCount
+    gps.send_P ( &gpsPort, F("PMTK220,2000") );                  //update 1time in 10seconds (value in ms)
+
+    //gps.send_P ( &gpsPort, F("PMTK104") );      // Factory reset DOES NOT WORK?
+    
+    gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GCA
   #endif
 
-#define STARTDELAY 12 // seconds
+#define STARTDELAY 2 // seconds
   #if LED == 0
     delay(STARTDELAY * 1000); // wait (value in ms) before sending 1st message
   #else
