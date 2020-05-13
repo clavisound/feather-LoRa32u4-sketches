@@ -96,7 +96,10 @@ uint8_t checkgps(){
 void displayGPS(){
     Serial.print(F("Year: "));Serial.print( fix.dateTime.year );
     Serial.print(F(" Month: "));Serial.print( fix.dateTime.month );
+    Serial.print(F(" Hours: "));Serial.print( fix.dateTime.hours );
+    Serial.print(F(" Minutes: "));Serial.print( fix.dateTime.minutes );
     Serial.print(F(" Seconds: "));Serial.println( fix.dateTime.seconds );
+    Serial.print(F("uptime GPS (s): "));Serial.println(fix.dateTime_ms());
     Serial.print(F("HDOP: "));Serial.print( fix.hdop );Serial.print(F(", latitude: "));Serial.print( fix.latitude(), 6 );Serial.print(F(", longitude: "));Serial.println( fix.longitude(), 6 );
     Serial.print(F("lat / lon: "));Serial.print( lat ); Serial.print(F(" "));Serial.println( lon );
     Serial.print(F("alt: "));Serial.print( fix.alt.whole ); Serial.print(F(", sats: "));Serial.println( fix.satellites );

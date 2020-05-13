@@ -27,6 +27,6 @@ void updUptime(){
   #if DEBUGINO == 1
     uptime = millis();  // Ok only for normal code (not sleepy)
   #else
-    uptime += millis(); // Ok only for sleepy code (millis are resetting)
+    uptime += millis() / 2; // Ok only for sleepy code (millis are resetting) EVAL / 2
   #endif
 }

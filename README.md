@@ -37,3 +37,10 @@ What is supported:
 8. Connect RX from Adafruit GPS to TX in feather
 9. Connect Power and GND.
 10. Connect EN pin from Adafruit GPS to A4 pin (feather 32u4)
+
+## bike-tracker-clv
+You can also find one third sketch: bike-tracker-clv. You will *also* need the library [lis3dh](github.com/clavisound/lis3dh-motion-detection/) - thanks to [lbad](https://github.com/ldab/lis3dh-motion-detection) for the initial release and the [LIS3DH accelerometer](https://www.adafruit.com/product/2809) from Adafruit.
+
+Extra things supported:
+1. Power Down (wake from accelerometer)
+2. Send location if the traveled distance is more than 50 meters.
