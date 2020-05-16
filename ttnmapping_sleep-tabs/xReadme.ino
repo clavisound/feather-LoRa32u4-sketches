@@ -27,3 +27,5 @@
 
 // ChangeLog
 // [solved] BUG (EPIC): after one day the days are ++ every TX, hours are ok. Watchdog was resetting the millis.
+
+// RESULTS: with LED on idle (blink every 8 secs) 1 month of uptime with SF9 battery 350mAh.

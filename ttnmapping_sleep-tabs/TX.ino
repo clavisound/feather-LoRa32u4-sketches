@@ -50,7 +50,7 @@ void transmit(){
   totalTXms += currentTXms;
 
   #if LED == 1
-    blinkLed(7, 20, 250); // short fast blinks for notify we send a lora data.
+    blinkLed(7, 10, 250); // short fast blinks for notify we send a lora data.
   #endif
 
   #if DEBUGINO == 1
@@ -62,13 +62,13 @@ void transmit(){
   #endif
 
   #if LED == 2
-    // blinkLed(blinks, 30, 5970 + randMS); // blink every 6 seconds
     blinkLed(blinks, 1, 8000); // blink every 8 seconds
   #endif
   
   #if LED == 0 & DEBUGINO == 1
     delay(secondsSleep * 1000); // delay works with ms, so multiply with 1000
   #endif
+  
   // EVAL Sleep without LED
   #if LED == 0 & DEBUGINO == 0
     uint16_t times = blinks;

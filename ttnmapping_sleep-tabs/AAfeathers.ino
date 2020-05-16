@@ -1,4 +1,4 @@
-#define FEATHER 1 // select your feather
+#define FEATHER 0 // select your feather
 
 #if FEATHER == 0
 // Network Session Key (MSB)

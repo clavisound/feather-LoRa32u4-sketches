@@ -5,7 +5,12 @@
 #if GPS == 1
 
 #define HDOP_LIMIT  4000
-#define NO_FIX_COUNT 120
+
+#if INDOOR == 1
+  #define NO_FIX_COUNT 12
+#else
+  #define NO_FIX_COUNT 120
+#endif
 
 void checkFix() {
 
@@ -18,6 +23,9 @@ void checkFix() {
   
   while ( 1 ) {                                    // run forever (until return)
     while (gps.available( Serial1 )) {             // Read only one character, so you have to call it FAST.
+      #if LISDH == 1
+        readIRQ();                                   // Read events from LIS
+      #endif
       fix = gps.read();
       //if (fix.valid.location ) {                     // EVAL better if fix.hdop < 8000?
       if (fix.hdop < HDOP_LIMIT && fix.hdop > 0 ) {    // MAX I have seen 8720 akai 8.7 DOP (NeoGPS multiplies * 1000)
@@ -27,6 +35,8 @@ void checkFix() {
         #if DEBUGINO == 1
           Serial.println(F("YES fix"));
         #endif
+
+        updUptime();
 
         speed = (int)fix.speed_kph(); checkSpeed(); // modify GPS rate and TAP according to speed.
 
@@ -51,6 +61,8 @@ void checkFix() {
         // we have many efforts and bad quality HDOP. Don't waste energy with GPS seeking.
         // Send the message with LOW HDOP
         if ( ++noFixCount >= 20 && fix.hdop >= HDOP_LIMIT ) {
+           
+           updUptime();
           
           #if DEBUGINO == 1
             Serial.print(F("High HDOP fix: GIVE UP secs: ")); Serial.println(uptime / 1000);
@@ -62,14 +74,17 @@ void checkFix() {
           #if MMA8452 == 1 | LISDH == 1                      // we lost gps enable TAP to be safe.
             // setupLIS();
           #endif
-        } else if ( noFixCount <= NO_FIX_COUNT ) { // Continue for number of failures (on update 1Hz every second)
+        } else if ( noFixCount <= NO_FIX_COUNT ) {           // Continue for number of failures (on update 1Hz every second)
           
           #if DEBUGINO == 1
             Serial.print("No fix: "); Serial.println(noFixCount);
             displayGPS();
           #endif
           
-        } else if ( noFixCount > NO_FIX_COUNT ) { // Give UP
+        } else if ( noFixCount > NO_FIX_COUNT ) {            // Give UP
+
+          updUptime();
+          
           #if DEBUGINO == 1
             Serial.print(F("No fix: GIVE UP secs: ")); Serial.println(uptime / 1000);
             displayGPS();
@@ -128,12 +143,12 @@ void displayGPS() {
   Serial.print(F(" Hour: ")); Serial.print( fix.dateTime.hours );
   Serial.print(F(" minutes: ")); Serial.print( fix.dateTime.minutes );
   Serial.print(F(" Seconds: ")); Serial.print( fix.dateTime.seconds );
-  Serial.print(F("\nGPS uptime (s): ")); Serial.println( fix.dateTime );
-  Serial.print(F("HDOP: ")); Serial.print( fix.hdop ); Serial.print(F(", latitude: ")); Serial.print( fix.latitude(), 6 ); Serial.print(F(", longitude: ")); Serial.println( fix.longitude(), 6 );
+  Serial.print(F("\nGPS time (s): ")); Serial.print( fix.dateTime );
+  Serial.print(F("\nHDOP: ")); Serial.print( fix.hdop ); Serial.print(F(", latitude: ")); Serial.print( fix.latitude(), 6 ); Serial.print(F(", longitude: ")); Serial.println( fix.longitude(), 6 );
   //Serial.print(F("lat / lon: "));Serial.print( lat ); Serial.print(F(" "));Serial.println( lon );
-  Serial.print(F("alt: ")); Serial.print( fix.alt.whole ); Serial.print(F(", sats: ")); Serial.println( fix.satellites );
-  Serial.print(F("speed: ")); Serial.println(speed);
-  Serial.print(F("LoRa HDOP: ")); Serial.println(loraData[11]);
+  Serial.print(F("alt: ")); Serial.print( fix.alt.whole ); Serial.print(F(", sats: ")); Serial.print( fix.satellites );
+  Serial.print(F(", speed: ")); Serial.print(speed);
+  Serial.print(F(", LoRa HDOP: ")); Serial.println(loraData[11]);
 }
 #endif
 
@@ -167,7 +182,7 @@ void GPSsleep() {
     Serial.print(F("GPS OFF\n"));
 #endif
 
-  delay(2000);                                 // MTK3339 needs some time.
+  delay(2000);                                  // MTK3339 needs some time. (2000 was fine, 100, 300 hangup)
   //digitalWrite(GPS_SLEEP, HIGH);             // Power OFF GPS.
   gps.send_P ( &gpsPort, F("PMTK161,0") );     // sleep (wake with any byte)
   //gps.send_P ( &gpsPort, F("PMTK225,9") );   // Periodic Mode, Always Locate (standby) 8 for standby, 9 for backup.
@@ -241,18 +256,17 @@ void prepareGPSLoRaData(){
             loraData[14] = 0;
             loraData[15] = 0;
           } else {
-            loraData[14] = fix.alt.whole >> 8;   // MSB altitude 16bits
-            loraData[15] = fix.alt.whole;        // TODO, we don't need those two bytes if we have < 255 metres.
-          }                                      // ^^ divide by 3 so in 8bits we have max alt of 765m
-          loraData[12] = fix.satellites;         // TODO: count bits, or maybe + 1 / divide with 2. Aka for 4 bits (max 16 sats)
-          loraData[13] = speed;                  // TODO: divide by 3 to have max speed of 90 with 5 bits
-          loraData[16] = fix.heading_cd() / 2;   // TODO: divide by 6 to fit in 6bits
+            loraData[14] = fix.alt.whole >> 8;     // MSB altitude 16bits
+            loraData[15] = fix.alt.whole;          // TODO, we don't need those two bytes if we have < 255 metres.
+          }                                        // ^^ divide by 3 so in 8bits we have max alt of 765m
+          loraData[12] = fix.satellites;           // TODO: count bits, or maybe + 1 / divide with 2. Aka for 4 bits (max 16 sats)
+          loraData[13] = speed;                    // TODO: divide by 3 to have max speed of 90 with 5 bits
+          loraData[16] = fix.heading_cd() / 200;   // TODO: divide by 6 to fit in 6bits (NeoGPS multiplies by 100)
 
           oldLat = fix.latitude() * 10E5;        // store lat / lon to compare with next fix.
           oldLon = fix.longitude() * 10E5;
 
           //GPSsleep();                            // Close GPS we are done
-          //gps.send_P ( &gpsPort, F("PMTK225,8") ); // Periodic Mode.
           #if DEBUGINO == 1
             displayGPS();
           #endif
@@ -278,13 +292,6 @@ uint8_t checkDistance(){
      }
 }
 
-uint32_t GPSuptime() {
-  #if DEBUGINO == 1
-    Serial.println(F("GPSuptime"));
-  #endif
-  currentTime = GPStime() - bootTime;
-}
-
 uint32_t GPStime() {
   #if DEBUGINO == 1
     Serial.print(F("GPStime\n"));
@@ -297,30 +304,24 @@ uint32_t GPStime() {
       fix = gps.read();
 
       if (fix.valid.location ) {               // ... unless we have location. Then we have time.
-        GPSsleep();
         return fix.dateTime;
       } else if ( fix.dateTime < 2432123456 ) {  // ... unless date is before 2080. THIS IS HACK small problem for 2080 and onwards! Device / library specific.
-      //} else if ( fix.dateTime > 2432123456 ) {  // DEBUG
-        GPSsleep();
         return fix.dateTime;
+        
+        #if INDOOR == 1
+          } else if ( fix.dateTime > 2432123456 ) {  // DEBUG Indoors
+          return fix.dateTime;
+        #endif
+        
       }
 
-/*#if DEBUGINO == 1
+#if DEBUGINO == 1
       Serial.print("time: "); Serial.println(fix.dateTime);
       Serial.print("millis (s): "); Serial.println(millis() / 1000);
 #endif
-*/
 
     }
   }
-  
-#if DEBUGINO == 1
-  #if GPS == 1
-    Serial.print(F("Uptime GPS (s): ")); Serial.println(currentTime);
-  #else
-    Serial.print(F("Uptime millis (s): ")); Serial.println(uptime / 1000);
-  #endif
-#endif
 }
 
 #endif // GPS == 1

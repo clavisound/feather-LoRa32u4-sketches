@@ -42,11 +42,16 @@ void setLed(int8_t times){
 
 void updUptime(){
   
-  #if DEBUGINO == 1 & ( MMA8452 == 0 | LISDH == 0 )
+  #if GPS == 1
+    Serial.print("\nupdUptime\n");
+    uptimeGPS = fix.dateTime - bootTime;
+  #endif
+  
+  #if DEBUGINO == 1 & ( MMA8452 == 0 | LISDH == 0 ) & GPS == 0
     uptime = millis();                             // Ok only for normal code (not sleepy)
   #endif
   
-  #if ( MMA8452 == 0 & LISDH == 0 ) & DEBUGINO == 0
+  #if DEBUGINO == 0  & ( MMA8452 == 0 & LISDH == 0 ) & GPS == 0
     uptime += millis() / 2;                        // Ok only for sleepy code (millis are resetting) EVAL (see BUG #2)
   #endif
 }
@@ -93,10 +98,10 @@ void toBeOrNotToBe(){
       GPSsleep();                                // Hang here but wakes with LIS(?!)
       //enablePinChange();                       // TODO enable only for orientation.
       if ( speed == 0 ) {
-        goToSleep();             // sleep forever (wake with accel)  
+       goToSleep();                              // sleep forever (wake with accel)  
       } else {
         #if LED == 2
-          blinkLed(blinks, 1, 8000); // blink every 8 seconds
+          blinkLed(blinks, 10, 8000); // blink every 8 seconds
         #else
           uint16_t times = blinks;
           for ( times > 0; times--; ) {
@@ -113,7 +118,7 @@ void toBeOrNotToBe(){
 
 void enablePinChange(){
 
-  delay(500);
+  delay(100);
   
   #if DEBUGINO == 1
     Serial.println(F("EN-able PinChange"));
@@ -133,7 +138,8 @@ void enablePinChange(){
 }
 
 void disablePinChange(){
-  delay(500);
+  
+  delay(100);
   
   #if DEBUGINO == 1
     Serial.println(F("DIS-able PinChange"));

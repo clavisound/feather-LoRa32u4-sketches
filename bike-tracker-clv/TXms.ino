@@ -55,28 +55,24 @@ void checkTXms (){
       return;
   }
 
-  // TODO check if uptime more than 12 hours reset MMA
-
-  // TODO check if already send message in last secondsSleep
-
   #if DEBUGINO == 1 & GPS == 1 & LISDH == 1
-    GPSuptime();
-    if ( currentTime - lastTXtime > secondsSleep ) { // we have reached the time. Transmit!
+    if ( uptimeGPS - lastTXtime > secondsSleep ) { // we have reached the time. Transmit!
       printDebug();
       checkBatt();
       readLIS();
       transmit();
     } else {
       // TODO disablePinChange
-      Serial.println(F("\nToo SOON! will wait: "));Serial.println(secondsSleep - ( currentTime - lastTXtime ) );
-      delay( ( secondsSleep - ( currentTime - lastTXtime ) ) * 1000);    // We waited some time, so subtract it.
+      // TODO: send with FALL
+      printDebug();
+      Serial.println(F("\nToo SOON! wake in: "));Serial.println(secondsSleep - ( uptimeGPS - lastTXtime ) );
+      delay( ( secondsSleep - ( uptimeGPS - lastTXtime ) ) * 1000);    // We waited some time, so subtract it.
       checkFix();
     }
   #endif
 
     #if DEBUGINO == 0 & GPS == 1 & LISDH == 1
-      GPSuptime();
-      if ( currentTime - lastTXtime > secondsSleep ) { // we have reached the time. Transmit!
+      if ( uptimeGPS - lastTXtime > secondsSleep ) { // we have reached the time. Transmit!
         checkBatt();
         readLIS();
         transmit();
@@ -84,10 +80,10 @@ void checkTXms (){
         // TODO disablePinChange
         #if LED == 2
         // recalculate blinks.
-          blinks = ( secondsSleep - ( currentTime - lastTXtime ) ) / 8;
+          blinks = ( secondsSleep - ( uptimeGPS - lastTXtime ) ) / 8;
           blinkLed(blinks, 1, 8000); // blink every 8 seconds
         #else
-          blinks = ( secondsSleep - ( currentTime - lastTXtime ) ) / 8;
+          blinks = ( secondsSleep - ( uptimeGPS - lastTXtime ) ) / 8;
           if ( blinks == 0 ) blinks = 1;
           uint16_t times = blinks;
           for ( times > 0; times--; ) {

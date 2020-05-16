@@ -1,13 +1,13 @@
 // ttnmapping with static SF or variabLEle SF. Made by clavisound started from: https://learn.adafruit.com/the-things-network-for-feather/using-a-feather-32u4
 // #define EU863 // BUG: TinyLoRa.h ignores this. If not defined default is: US902. Other options: EU863, AU915, AS920
 
-#define SF 9        // SF7 to SF12
-#define DEBUGINO 0  // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
-#define PHONEY 0    // 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
-#define CYCLESF 0   // 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
-#define CHAOS 1     // 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +212 program bytes, +33 bytes RAM; [default 1]
-#define LED 2       // 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] [default: 2]
-#define USBSERIAL 0 // 1 = to enable serial, 0 to save battery.
+#define SF         9   // SF7 to SF12
+#define DEBUGINO   1   // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
+#define PHONEY     1   // 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define CYCLESF    0   // 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
+#define CHAOS      1   // 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +212 program bytes, +33 bytes RAM; [default 1]
+#define LED        0   // 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] [default: 2]
+#define USBSERIAL  0   // 1 = to enable serial, 0 to save battery.
 
 #include <TinyLoRa.h>
 #include <SPI.h>

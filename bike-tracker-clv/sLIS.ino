@@ -41,7 +41,7 @@ void setupLIS(){
 
 void readIRQ(){
   #if DEBUGINO == 1
-    Serial.print("\nreadIRQ ");
+    Serial.print("\nreadIRQ\n");
   #endif
   
   if ( interruptEvent > 0 ) { // nornally > 0 but LIS3DH fires two INTerrupts on setup!
@@ -86,7 +86,7 @@ void readLIS(){
     }
     #if DEBUGINO == 1
       Serial.print(F("RAW: "));
-      Serial.print(dataHighres);Serial.print(F(", "));
+     Serial.print(dataHighres);Serial.print(F(", "));
     #endif
 
     if( lis.readRegisterInt16( &dataHighres, LIS3DH_OUT_Y_L ) != 0 )
@@ -126,6 +126,8 @@ void readLIS(){
    #if LED > 0
      blinkTen();
    #endif
+
+   Serial.println();
 
 /*
    if ( evntLis > 0 ) {
@@ -193,8 +195,9 @@ void setupXYZevents(){ // EVAL setupXYZevents(INT_0); for disable
   
   // WAS OK
   //lis.intConf(INT_1, BIKE_FALL, 40, 32, 1); // default (INT_1, DET_MOVE, 13, 0, 2) 2 = seconds, 1 = polarity
-  
-   lis.intConf(INT_1, BIKE_FALL, 40, 32, 1); // default (INT_1, DET_MOVE, 13, 0, 2) 2 = seconds, 1 = polarity
+
+  // it works even
+   lis.intConf(INT_1, BIKE_FALL, 40, 1, 32); // default (INT_1, DET_MOVE, 13, 0, 2)  1 = polarity, 2 = seconds,
   
   //lis.intConf(INT_2, DET_STOP, 13, 10); // adafruit has only one INT :(
 

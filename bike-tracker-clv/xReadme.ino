@@ -59,7 +59,8 @@
 // NiMH LSD = 40mA in 24hours.
 
 // MMA see GPS.ino. Stuck to MMA if enabled. [6-may-2020]
-// LIS [13-May-2020]: Detect fall, EVAL reference register..
+// MMA check if uptime more than ?? hours reset MMA just in case.
+// LIS [13-May-2020]: Detect fall, EVAL reference register.
 
 // SYSTEM BUG #2: hour uptime is wrong, it's counting every half hour. (check 1 may)
 // SYSTEM QOS #1 [solved 13-may-2020]: Not an issue, just a counter. When Transmitting, disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
@@ -68,7 +69,7 @@
 
 // SYSTEM rename: lastTXtime endTXtime to GPSendTXdayTime endTXdayTime
 // SYSTEM: eval DAY reset (ex. every 3 hours) with GPS: [7-may-2020]
-// SYSTEM: I think I don't need lastTXtime but only currentTime (better rename to uptimeGPS)
+// SYSTEM: I think I don't need lastTXtime but only uptimeGPS
 // GPS: if after 12 hours wake up, we are in diffent location, send LoRa
 
 // SYSTEM BUG #3: GPS OFF via UART hangs something. (not the MCU, or Serial BUS, maybe the Interrupt BUS is constant ON?).
