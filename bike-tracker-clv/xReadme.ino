@@ -74,6 +74,13 @@
 
 // SYSTEM BUG #3: GPS OFF via UART hangs something. (not the MCU, or Serial BUS, maybe the Interrupt BUS is constant ON?).
 
+// BUG #4: Sends every 3-4 minutes unconditionally
+// BUG #5: Wrong uptime after fix.
+// BUG #6: Wrong Fixes 2008,8,featherb,-, 0s, 2d200h, 3.44(84), 1, 14, 2020-06-20 08:44:29, -26.320642, -177.068324, 0m, 239km/h240, 0sats, 0.1, 867.5, SF9BW125, eui-b827ebfffe7eed02, -, 2#, -104, 0.5
+// BUG #7 [Done] 28-Jun-2020: Does not wake up if GPSsleep via UART! a) try to disable GPS with cable, then sleep. Solution: Exit checkFix() with return to free Serial1
+// BUG #8: GPS ON when Feather goToSleep(!) if DEBUGINO == 0 (!!)
+// BUG #9: Slow operation with Battery (3xAA eneloop style) vs USB (!)
+
 // Senario #1: GPS   fix and speed 0    > accel sensitive > power down > wait accel for ever.
 // Senario #2: GPS noFix                > accel sensitive > power down > wait accel for ever.
 // Senario #3: GPS fix and speed over 0 > accel insensitive > scan every three minutes

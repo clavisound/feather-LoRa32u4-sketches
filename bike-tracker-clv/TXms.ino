@@ -26,22 +26,22 @@ void checkTXms (){
       #endif
 
       #if DEBUGINO == 1 & GPS == 1
-        GPSsleep();                                 // GPS OFF
+        // GPSsleep();                                 // GPS OFF
         // sleep for X time (calculate for the rest of 24 hours)
         delay( ( DAY - lastTXtime % DAY ) * 1000); // DAY = 86400 (seconds)
       #endif
 
-      #if DEBUGINO == 0 & GPS == 0
-        uint16_t times = ((DAY - endTXtime) / 1000) / 8; // sleep for a day.
+      #if DEBUGINO == 0 & GPS == 1 // Even with MMA8452, we have to wake after the DAY limit. Just in case.
+        // GPSsleep();                // GPS OFF
+        uint16_t times = ( DAY - lastTXtime ) / 8; // sleep for a day.
         for ( times > 0; times--; ) {
             uint16_t sleepMS = Watchdog.sleep(8000);  // Sleep for up to 8 seconds
             uptime += sleepMS; // we need this because sleep resets millis.
         }
       #endif
 
-      #if DEBUGINO == 0 & GPS == 1 // Even with MMA8452, we have to wake after the DAY limit. Just in case.
-        GPSsleep();                // GPS OFF
-        uint16_t times = ( DAY - lastTXtime ) / 8; // sleep for a day.
+      #if DEBUGINO == 0 & GPS == 0
+        uint16_t times = ((DAY - endTXtime) / 1000) / 8; // sleep for a day.
         for ( times > 0; times--; ) {
             uint16_t sleepMS = Watchdog.sleep(8000);  // Sleep for up to 8 seconds
             uptime += sleepMS; // we need this because sleep resets millis.
@@ -58,8 +58,9 @@ void checkTXms (){
   #if DEBUGINO == 1 & GPS == 1 & LISDH == 1
     if ( uptimeGPS - lastTXtime > secondsSleep ) { // we have reached the time. Transmit!
       printDebug();
+      Serial.println("* TXms");
       checkBatt();
-      readLIS();
+      checkPin();
       transmit();
     } else {
       // TODO disablePinChange
@@ -67,6 +68,7 @@ void checkTXms (){
       printDebug();
       Serial.println(F("\nToo SOON! wake in: "));Serial.println(secondsSleep - ( uptimeGPS - lastTXtime ) );
       delay( ( secondsSleep - ( uptimeGPS - lastTXtime ) ) * 1000);    // We waited some time, so subtract it.
+      checkPin();
       checkFix();
     }
   #endif
@@ -74,23 +76,25 @@ void checkTXms (){
     #if DEBUGINO == 0 & GPS == 1 & LISDH == 1
       if ( uptimeGPS - lastTXtime > secondsSleep ) { // we have reached the time. Transmit!
         checkBatt();
-        readLIS();
+        checkPin();
         transmit();
       } else {
         // TODO disablePinChange
         #if LED == 2
         // recalculate blinks.
+        // HERE: Something BAD here.
           blinks = ( secondsSleep - ( uptimeGPS - lastTXtime ) ) / 8;
-          blinkLed(blinks, 1, 8000); // blink every 8 seconds
+          #if LED == 3
+           ledDEBUG(blinks, 20, 300);
+          #endif
+           blinkLed(blinks, 15, 8000); // blink every 8 seconds
+          #if LED == 3
+           ledDEBUG(10, 2, 100);
+          #endif
         #else
-          blinks = ( secondsSleep - ( uptimeGPS - lastTXtime ) ) / 8;
-          if ( blinks == 0 ) blinks = 1;
-          uint16_t times = blinks;
-          for ( times > 0; times--; ) {
-            uint16_t sleepMS = Watchdog.sleep(8000);  // Sleep for up to 8 seconds
-              uptime += sleepMS;                        // EVAL BUG #2 uptime += 8000;
-          }
+          sleepForSeconds(secondsSleep - ( uptimeGPS - lastTXtime ));
         #endif
+        checkPin();
         checkFix();
       }
     #endif

@@ -4,11 +4,6 @@
 #define LOW_POWER
 
 void setupLIS(){
-
-  pinMode(INT_PIN_TEN, INPUT_PULLUP);     // Setup the button pin
-  digitalWrite (INT_PIN_TEN, LOW);        // disable pull-up on button
-  //pinMode(INT_PIN_ELEVEN, INPUT);       // Setup the button pin
-  //digitalWrite (INT_PIN_ELEVEN, HIGH);  // disable pull-up on button
   
   if( lis.begin(LIS_RATE, 1, 1, 1, LIS_RANGE) != 0 )
   {
@@ -41,17 +36,16 @@ void setupLIS(){
 
 void readIRQ(){
   #if DEBUGINO == 1
-    Serial.print("\nreadIRQ\n");
+    Serial.print("\n* readIRQ\n");
   #endif
   
   if ( interruptEvent > 0 ) { // nornally > 0 but LIS3DH fires two INTerrupts on setup!
     #if DEBUGINO == 1
-      Serial.print("INT: ");
-      Serial.print("events: ");Serial.println(interruptEvent);
+      Serial.print("# of events: ");Serial.println(interruptEvent);
     #endif
-    blinkTen();
-    readLIS(); // to enable new interrupt
+    
     interruptEvent = 0;
+    checkPin();
   }
 }
 
@@ -61,11 +55,6 @@ void readLIS(){
   if ( evntLis & 0b01000000 ) {    // latched event
   #if DEBUGINO == 1
     Serial.print("Event: ");Serial.print(evntLis);
-  #endif
-
-  // blink
-  #if LED > 0
-   blinkTen();
   #endif
   
   #if DEBUGINO == 1
@@ -85,7 +74,7 @@ void readLIS(){
       errorsAndWarnings++;
     }
     #if DEBUGINO == 1
-      Serial.print(F("RAW: "));
+     Serial.print(F("RAW: "));
      Serial.print(dataHighres);Serial.print(F(", "));
     #endif
 
@@ -93,8 +82,8 @@ void readLIS(){
      {
       errorsAndWarnings++;
     }
-      #if DEBUGINO == 1
-    Serial.print(dataHighres);Serial.print(F(", "));
+    #if DEBUGINO == 1
+      Serial.print(dataHighres);Serial.print(F(", "));
     #endif
 
     if( lis.readRegisterInt16( &dataHighres, LIS3DH_OUT_Z_L ) != 0 )
@@ -106,13 +95,17 @@ void readLIS(){
     Serial.print(dataHighres);
     Serial.print(F(" millis: "));Serial.println(millis() / 1000);
    #endif
+
+   #if LED == 3
+    ledDEBUG(5, 3, 997);
+   #endif
    
     }
     
     // check tap
     evntLis = lis.readTap(); // CLICK_SRC
     
-    #if DEBUGINO == 1
+    #if DEBUGINO == 1 // TODO: go there only if eventLis > 0
       if ( ( TAPINT  & evntLis ) == TAPINT   ) Serial.print(F("Tap Interrupt. ")); 
       if ( ( XTAP    & evntLis ) == XTAP     ) Serial.print(F("Xtap "));
       if ( ( YTAP    & evntLis ) == YTAP     ) Serial.print(F("Ytap "));
@@ -120,12 +113,8 @@ void readLIS(){
       if ( ( SNGTAP  & evntLis ) == SNGTAP   ) Serial.print(F("Single tap "));
       if ( ( DBLTAP  & evntLis ) == DBLTAP   ) Serial.println(F("Double tap "));
       if ( ( TAPSIGN & evntLis ) == TAPSIGN  ) Serial.print(F("- "));
-      Serial.print(F("evntLis: "));Serial.println(evntLis);
+      Serial.print(F("* LisTap: "));Serial.println(evntLis);
     #endif
-
-   #if LED > 0
-     blinkTen();
-   #endif
 
    Serial.println();
 
@@ -164,7 +153,7 @@ void enableTAP(){
   // Rate 50 Hz
   // lis.intConf(INT_1, BIKE_FALL, 40, 1, 100);
   // lis.autoSleep(16, 64); 
-  // INT 100 = fire every 10secs.  With motion fires for 10 secs every 2 secs.
+  // INT 100 = fire every 10 secs.  With motion fires for 10 secs every 2 secs.
   // INT 127 = fire every 13 secs. With motion fires for 10 secs every 2 secs.
 
   // Rate 25 Hz
@@ -181,7 +170,7 @@ void enableTAP(){
 
 void disableTAP(){
   #if DEBUGINO == 1
-    Serial.println(F("DIS-able TAP"));
+    Serial.println(F("* DIS-able TAP"));
   #endif
   lis.configTap(0,0,0,0,0,0,8); // Enable Z2,Z1,Y2,Y1,X2,X1,threshold [default 10, 7bit]
 }
@@ -202,10 +191,26 @@ void setupXYZevents(){ // EVAL setupXYZevents(INT_0); for disable
   //lis.intConf(INT_2, DET_STOP, 13, 10); // adafruit has only one INT :(
 
   #if DEBUGINO == 1
-    Serial.println(F("EN-able XYZ"));
+    Serial.println(F("* Enable XYZ"));
     lis.readRegister(&temp, LIS3DH_INT1_CFG);
     Serial.print("INT_CFG: ");Serial.print(temp, HEX);Serial.print(", ");Serial.println(temp, BIN);
   #endif
+}
+
+void checkPin(){
+  #if DEBUGINO == 1
+   Serial.println("* checkPin");
+  #endif
+   readLIS();
+  
+  if ( digitalRead(INT_PIN_ELEVEN) == 0 ) { // blink on connection.
+   #if DEBUGINO == 1
+    Serial.println(F("\nGND pin #11\n"));
+   #endif
+   #if LED == 3
+    ledDEBUG(1, 6000, 200);
+   #endif
+  }
 }
 
 #endif

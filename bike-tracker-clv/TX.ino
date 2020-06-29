@@ -1,18 +1,15 @@
 void transmit(){
+   noFixCount = 0; // just in case
+  
   // EVAL disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
-
   #if LISDH == 1 | MMA8452 == 1
-     disablePinChange();
-     readIRQ();
+     //disablePinChange();
+     //readIRQ();
   #endif
 
   #if GPS == 1
-    /*if ( uptimeGPS - lastTXtime >= DAY ) { // we have a new day // BUG / EVAL I think this wrong!
-      days++;                                // one day more uptime. // BUG / EVAL I think this wrong!
-      totalTXms = 0;                         // reset TX counter, we have a new day.
-    }*/
     if ( uptimeGPS - lastTXtime >= DAY ) {   // check if uptime in days is different
-      // TODO maybe we sleep more that one DAY. check GPS for that.
+      // TODO maybe we slept more that one DAY. check GPS for that.
       days++;                                // one day more uptime. // BUG / EVAL I think this wrong!
       totalTXms = 0;                         // reset TX counter, we have a new day.
     }
@@ -23,8 +20,6 @@ void transmit(){
       uptime = 0;                         // reset uptime. There is a better solution?
     }
   #endif
-
-   GPSsleep();
    
    setupLora();
    // prepare data for ttn. Lower bits 1-2, are for batC,
@@ -77,6 +72,10 @@ void transmit(){
     endTXtime = millis();              // valid for sleep (millis are resetting)
   #endif
 
+  #if LED == 3
+   ledDEBUG(7,30,100);
+  #endif
+  
   fc++;
 
   // calculate the total of transmission duration. This is the end.
@@ -84,15 +83,10 @@ void transmit(){
   totalTXms += currentTXms;
 
   #if LED == 1
-    blinkLed(7, 10, 250); // short fast blinks for notify we send a lora data.
+    blinkLed(7, 30, 250); // short fast blinks for notify we send a lora data.
   #endif
 
   #if DEBUGINO == 1
-    if ( speed == 0 ) {
-      Serial.print(F("\nSent, sleeping for minutes: "));
-      Serial.print((secondsSleep / 60)); 
-      } else { Serial.print(F("\nMCU OFF"));
-      }
     Serial.print(F(" s: ")); Serial.println(secondsSleep);
     Serial.print("endTXtime: " );Serial.println(endTXtime);
     Serial.print("totalTXms: " );Serial.println(totalTXms);
@@ -101,17 +95,13 @@ void transmit(){
     for ( uint8_t counter = 0; counter < loraSize; counter++ ) {
         Serial.print(loraData[counter], HEX);Serial.print(F(" "));
       }
-      Serial.println();
+    Serial.println();
       
-      printDebug();
+    printDebug();
   #endif
-
-  // TODO MAKE IT BETTER with #if's
 
   // EVAL enable INT1 + INT2.
   
-     // enablePinChange();
-     //readIRQ();
-    // Stuck here...
-    toBeOrNotToBe();             // decide to sleep or to wait.
+  // Stuck here...
+  toBeOrNotToBe();             // decide to sleep or to wait.
 }

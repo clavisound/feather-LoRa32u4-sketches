@@ -24,7 +24,7 @@ void checkBatt(){
     if ( vbatC > 3 ){ vbatC = 3; } // sometimes vbat is > 635 (aka: 185 after 8bit conversion) and we have overflow.
     
     #if DEBUGINO == 1
-      Serial.print(F("VBat (8bit): ")); Serial.print(vbat);Serial.print(F(", VBatB (volt): ")); Serial.print((vbat + 450) * 0.0064453125);
+      Serial.print(F("* VBat (8bit): ")); Serial.print(vbat);Serial.print(F(", VBatB (volt): ")); Serial.print((vbat + 450) * 0.0064453125);
       Serial.print(F(", VBatC (range): ")); Serial.println(vbatC);
     #endif
     loraData[0] = vbat; // loraData[0] = highByte(vbat);loraData[1] = lowByte(vbat);

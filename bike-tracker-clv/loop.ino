@@ -2,8 +2,13 @@
 void loop()
 {
     #if CYCLESF == 0
-     readIRQ();
+     readIRQ();                       // clear events
+     #if DEBUGINO == 1
+       Serial.println("\n** Loop");
+     #endif
      checkFix();
+     readIRQ();                       // Read events from accelerometer TODO: MASK events to variable.
+     checkTXms();
     #endif
 
     #if CYCLESF == 1

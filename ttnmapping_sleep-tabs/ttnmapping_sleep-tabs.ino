@@ -2,8 +2,8 @@
 // #define EU863 // BUG: TinyLoRa.h ignores this. If not defined default is: US902. Other options: EU863, AU915, AS920
 
 #define SF         9   // SF7 to SF12
-#define DEBUGINO   1   // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
-#define PHONEY     1   // 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define DEBUGINO   0   // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
+#define PHONEY     0   // 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 #define CYCLESF    0   // 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
 #define CHAOS      1   // 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +212 program bytes, +33 bytes RAM; [default 1]
 #define LED        0   // 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] [default: 2]
@@ -21,7 +21,7 @@ uint16_t fc = 0;          // framecounter. We need this if we sleep. In that cas
 
 // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5'
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
-uint32_t const secondsSleep = 3600;
+uint32_t const secondsSleep = 86400;
 // ** THIS IS THE LIMIT OF THIS PROGRAM **, DO NOT USE LESS THAN 10 SECONDS!
 // uint32_t const secondsSleep = 10; // sleep for 10 seconds.
 
@@ -54,12 +54,10 @@ uint8_t vbatC; // battery level 0-3 (0%, 30%, 60%, 90%)
 
 uint16_t randMS; // used to random sleep
 
-#if LED > 0
-   /* To have every 5 sec blink we divide the secondsSleep with 5 secs and we find the number of blinks
-   *  Example: 100 seconds / 5 = 20 blinks, another example: 600 seconds / 5 = 120 blinks.
-   */
-  uint16_t const blinks = secondsSleep / 8; // 8 = seconds maximum of watchdog
-#endif
+/* To have every 5 sec blink we divide the secondsSleep with 5 secs and we find the number of blinks
+*  Example: 100 seconds / 5 = 20 blinks, another example: 600 seconds / 5 = 120 blinks.
+*/
+uint16_t blinks = secondsSleep / 8; // 8 = seconds maximum of watchdog
 
 // after 24 hours (86.400.000 millis), we can re-send messages if we hit the wall (TTN rule)
 // millis are rollover after 49 days and 17 hours
