@@ -1,7 +1,7 @@
 // Bike tracker. Made by clavisound.
 // #define EU863 // BUG: TinyLoRa.h ignores this. Modify TinyLoRa.h else default is: US902. Other options: EU863, AU915, AS920
 
-#define SF        9     // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
+#define SF        7     // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
 #define CYCLESF   0     // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
 #define LED       3     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
 #define CHAOS     1     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +392 program bytes, +3 bytes RAM; [default 1]
@@ -9,25 +9,25 @@
 #define LISDH     1     // [default 1] 0 for LIS3DH  accelerator, 1 for yes.
 //#define BUZZER    1   // TODO [default 0] 1 to hear some beeps!
 
-int8_t txPower = 3;     // valid values -80, 0-20. For EU limit is 14dBm
+int8_t txPower = 14;     // valid values -80, 0-20. For EU limit is 14dBm
 
 #define MMA8452   0     // [NOT SUPPORTED - FAILED EFFORT. After abuse it locks. Maybe with I2C it's reliable - also maybe my building enviroment was faulty.]
                         // 0 to disable code for MMA8452 accelerator, 1 to enable.
 // DEBUG options
-#define DEBUGINO  0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
+#define DEBUGINO  1     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
 #define INDOOR    0     // [default 0] For DEBUG INDOORs
 #define PHONEY    0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 
 // Data Packet to Send to TTN
-#define FRAME_PORT_NO_GPS 3
-#define LORA_HEARTBEAT    5
+#define FRAME_PORT_NO_GPS 3             // Port without GPS data
+#define LORA_HEARTBEAT    5             // Data bytes
 
 // USER SETTINGS //
 uint16_t fc = 3000;                     // framecounter. We need this if we sleep. In that case lora module forgets everything. TODO store in EEPROM
 
 // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
-uint32_t secondsSleep = 1800;
+uint32_t secondsSleep = 300;
 // ** THIS IS THE LIMIT OF THIS PROGRAM **, DO NOT USE LESS THAN 10 SECONDS!
 // uint32_t const secondsSleep = 10; // sleep for 10 seconds.
 
@@ -38,12 +38,12 @@ uint32_t secondsSleep = 1800;
 #if GPS == 1
   #define DAY  86400    // = day in seconds. Use to comply with TTN policy (7200 for 2 hours)
 #else
-  #define DAY  86400000 // = day in ms. (you are using millis instead of GPS time)
+  #define DAY  86400000  // = day in ms. (you are using millis instead of GPS time)
 #endif
-#define TXMS 30000      // = TTN limit 30.000ms (30 seconds) per day.
+#define TXMS 30000       // = TTN limit 30.000ms (30 seconds) per day.
 //#define TXMS 1000      // DEBUG
 
-#define VBATPIN A9 // battery pin to measure voltage
+#define VBATPIN A9       // battery pin to measure voltage
 
 #if GPS == 1
   #include <NMEAGPS.h>
@@ -64,7 +64,7 @@ uint32_t secondsSleep = 1800;
   uint8_t noFixCount;                                 // in cloudy balcony fix after 70 seconds.
 
   #define FRAME_PORT_GPS 7                            // TTN mapper to 8. 7th port for 5 floats precision.
-  #define LORA_TTNMAPPER 17                      
+  #define LORA_TTNMAPPER 17                           // Data bytes
   uint32_t bootTime;
   uint32_t uptimeGPS;
   uint32_t lastTXtime = 86400;                        // have to set this, otherwise first TX fails;

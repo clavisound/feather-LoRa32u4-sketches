@@ -1,4 +1,4 @@
-// Added by clavisound, from Jul2019 to May2020
+// Added by clavisound, from Jul2019 to Jun2020
 // 1. SF cycle for experiments with ttnmapper.org
 // 2. led notifications
 // 3. Battery monitor / TXms (duration) monitor
@@ -26,10 +26,10 @@
 // TODOs
 // EEPROM https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram Wear after ?? writes
 // ACCEL       - Byte [DONE] + code [semiDONE]
-// Button      - Code [DONE] + resistor (interrupt code)
+// Button      - Code [DONE] + resistor [DONE with internal pull-up] (interrupt code)
 // Buzzer      - Choose resistor (25ma max. EVAL 330Ohm)
-// GPS         - InProgress
-// Reed switch - Test with magnet [semiDONE]
+// GPS         - InProgress [semi-DONE, low quality with battery?]
+// Reed switch - Test with magnet [semi-DONE]
 // BLE         - Installation + code
 
 // ChangeLog
@@ -46,7 +46,7 @@
 // GPS TODO: When sleep if LED, is on, it stays on 23-apr-2020.
 // GPS TODO: Compare 24bits loc with 16bits, 23-apr-2020
 // GPS TODO: bike payload, 23-apr-2020
-// GPS TODO: distance? 23-apr-2020
+// GPS [Done] 29-May-2020: distance? 23-apr-2020
 // GPS [Done] 24-apr-2020: Power off GPS with two methods. Pin and Command.
 // GPS [Done] 28,apr,2020: latitude payloads testing 10E5 vs 100000 e.t.c.,
 
@@ -63,18 +63,18 @@
 // LIS [13-May-2020]: Detect fall, EVAL reference register.
 
 // SYSTEM BUG #2: hour uptime is wrong, it's counting every half hour. (check 1 may)
-// SYSTEM QOS #1 [solved 13-may-2020]: Not an issue, just a counter. When Transmitting, disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
+// SYSTEM QOS #1 [Done] 13-may-2020: Not an issue, just a counter. When Transmitting, disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
 
-// SYSTEM regression [solved] 6-may-2020: Wrong TX calculation [6-may-2020]
+// SYSTEM regression [Done] 6-may-2020: Wrong TX calculation [6-may-2020]
 
 // SYSTEM rename: lastTXtime endTXtime to GPSendTXdayTime endTXdayTime
 // SYSTEM: eval DAY reset (ex. every 3 hours) with GPS: [7-may-2020]
 // SYSTEM: I think I don't need lastTXtime but only uptimeGPS
-// GPS: if after 12 hours wake up, we are in diffent location, send LoRa
+// GPS: if after 12 hours wake up, we are in different location, send LoRa
 
-// SYSTEM BUG #3: GPS OFF via UART hangs something. (not the MCU, or Serial BUS, maybe the Interrupt BUS is constant ON?).
+// SYSTEM BUG #3 [Done] check BUG #8: GPS OFF via UART hangs something. (not the MCU, or Serial BUS, maybe the Interrupt BUS is constant ON?).
 
-// BUG #4: Sends every 3-4 minutes unconditionally
+// BUG #4 [Done] 29-Jun-2020 (Solution: temporarily disable watchdog ): Sends every 3-4 minutes unconditionally
 // BUG #5: Wrong uptime after fix.
 // BUG #6: Wrong Fixes 2008,8,featherb,-, 0s, 2d200h, 3.44(84), 1, 14, 2020-06-20 08:44:29, -26.320642, -177.068324, 0m, 239km/h240, 0sats, 0.1, 867.5, SF9BW125, eui-b827ebfffe7eed02, -, 2#, -104, 0.5
 // BUG #7 [Done] 28-Jun-2020: Does not wake up if GPSsleep via UART! a) try to disable GPS with cable, then sleep. Solution: Exit checkFix() with return to free Serial1

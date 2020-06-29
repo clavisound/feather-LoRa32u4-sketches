@@ -34,7 +34,11 @@ void checkFix() {
         // checkSpeed();                   // EVAL: modify GPS rate and TAP according to speed.
 
           if ( checkDistance() == 1 ) {    // new location. Prepare data and send.
+            #if DEBUGINO == 1
+              Serial.println("* Will send GPS");
+            #endif
             prepareGPSLoRaData();
+            return;
           } else {                         // same location, send samelocation.
             FramePort = FRAME_PORT_NO_GPS; // TODO: PORT for same location
             loraSize = LORA_HEARTBEAT;     // don't send the GPS data.
@@ -60,7 +64,7 @@ void checkFix() {
 
         // we have many efforts and bad quality HDOP. Don't waste energy with GPS seeking.
         // Send the message with LOW HDOP
-        if ( ++noFixCount >= 60 && fix.hdop >= HDOP_LIMIT ) {
+        if ( ++noFixCount >= 220 && fix.hdop >= HDOP_LIMIT ) {
            
            updUptime();
           
@@ -294,6 +298,8 @@ void prepareGPSLoRaData(){
 }
 
 uint8_t checkDistance(){
+    // DEBUG: REMOVE FOR PRODUCTION
+    return 1;
        #if DEBUGINO == 1
           // EVAL Probably 400meters off in distance of 4000meters. So, for every 10m we have 1meter of mistake?
           // Serial.print( F(" From WT (m): ") );
@@ -305,9 +311,9 @@ uint8_t checkDistance(){
        #endif
 
      // RESTORE / PRODUCTION OK
-     //if ( DistanceBetween(oldLat, oldLon, fix.latitude() * 10E5, fix.longitude() * 10E5 ) > 49 ) { // distance more than 49 meters
+     if ( DistanceBetween(oldLat, oldLon, fix.latitude() * 10E5, fix.longitude() * 10E5 ) > 49 ) { // distance more than 49 meters
      // DEBUG
-     if ( DistanceBetween(oldLat, oldLon, fix.latitude() * 10E5, fix.longitude() * 10E5 ) > 0 ) {
+     //if ( DistanceBetween(oldLat, oldLon, fix.latitude() * 10E5, fix.longitude() * 10E5 ) > 0 ) {
       return 1;
      } else {
       return 0;

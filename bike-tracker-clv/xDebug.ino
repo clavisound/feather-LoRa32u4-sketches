@@ -1,9 +1,5 @@
 void printDebug(){
-    #if LED == 2
-    // EVAL not tested.
-    // USBDevice.attach();delay(2000);
-    #endif
-
+  
     #if DEBUGINO == 1
       // for F() macro check https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram (convert SRAM to PROGMEM)
       Serial.print(F("\nFC: ")); Serial.print(fc);
