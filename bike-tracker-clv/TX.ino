@@ -1,25 +1,31 @@
 void transmit(){
+  #if GPS == 1
    noFixCount = 0; // just in case
+   #endif
   
   // EVAL disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
   #if LISDH == 1 | MMA8452 == 1
      //disablePinChange();
      //readIRQ();
-  #endif
+   #endif
 
-  #if GPS == 1
-    if ( uptimeGPS - lastTXtime >= DAY ) {   // check if uptime in days is different
-      // TODO maybe we slept more that one DAY. check GPS for that.
-      days++;                                // one day more uptime. // BUG / EVAL I think this wrong!
-      totalTXms = 0;                         // reset TX counter, we have a new day.
-    }
-  #else
+   #if GPS == 1
+      days = uptimeGPS / DAY;             // calculate days.
+      /* EVAL: More efficient way?
+       *  
+       *  if ( uptimeGPS - lastTXtime >= DAY * 2 ) { days = uptimeGPS / DAY; }
+       *  else { days++; }
+       *  
+       */
+   #else
     if ( uptime - endTXtime >= DAY ) {    // we have a new day
       days++;                             // one day more uptime.
-      totalTXms = 0;                      // reset TX counter, we have a new day.
       uptime = 0;                         // reset uptime. There is a better solution?
     }
-  #endif
+   #endif
+
+   // We have a new DAY? Reset the TX counter
+   if ( days != loraData[2] ) { totalTXms = 0; } // reset TX counter, we have a new day.
    
    setupLora();
    // prepare data for ttn. Lower bits 1-2, are for batC,
@@ -31,9 +37,9 @@ void transmit(){
    loraData[3] = txPower;                            // TODO -1 to 20dBm, not -80 to 20
    
    #if GPS == 1
-     loraData[4] = uptimeGPS / 60 / 60;                 // convert seconds to hours (24hours = 5bits) (see blinkLed)
+     loraData[4] = ( uptimeGPS % DAY ) / 3600;       // convert seconds to hours [TODO: 24hours = 5bits (see blinkLed)]
    #else
-     loraData[4] = uptime / 1000 / 60 / 60;          // convert ms to hours (24hours = 5bits) (see blinkLed)
+     loraData[4] = uptime / 1000 / 60 / 60;          // convert ms to hours [TODO: 24hours = 5bits (see blinkLed)]
    #endif
    
    // loraData of GPS data are in GPS tab.
@@ -79,8 +85,8 @@ void transmit(){
   fc++;
 
   // calculate the total of transmission duration. This is the end.
-  currentTXms = endTXtime - startTXms - 15; // TinyLoRa setup has delay 10 + 5
-  totalTXms += currentTXms;
+  currentTXms = endTXtime - startTXms - 15; // TinyLoRa setup has delays 10 + 5
+  totalTXms += currentTXms;                 // Add to the total TX time
 
   #if LED == 1
     blinkLed(7, 30, 250); // short fast blinks for notify we send a lora data.

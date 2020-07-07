@@ -44,15 +44,6 @@ void loop()
     #if CYCLESF == 0
       readIRQ();
       checkTXms();
-
-      // EVAL seems to working
-      /*
-      goToSleep();
-       #if DEBUGINO == 1
-         USBDevice.attach(); // does not work
-         delay(2000);
-       #endif
-       */
     #endif
 
     #if CYCLESF == 1
