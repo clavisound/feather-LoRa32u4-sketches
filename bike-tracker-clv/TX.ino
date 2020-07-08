@@ -1,7 +1,4 @@
 void transmit(){
-  #if GPS == 1
-   noFixCount = 0; // just in case
-   #endif
   
   // EVAL disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
   #if LISDH == 1 | MMA8452 == 1
@@ -11,12 +8,6 @@ void transmit(){
 
    #if GPS == 1
       days = uptimeGPS / DAY;             // calculate days.
-      /* EVAL: More efficient way?
-       *  
-       *  if ( uptimeGPS - lastTXtime >= DAY * 2 ) { days = uptimeGPS / DAY; }
-       *  else { days++; }
-       *  
-       */
    #else
     if ( uptime - endTXtime >= DAY ) {    // we have a new day
       days++;                             // one day more uptime.
@@ -24,13 +15,13 @@ void transmit(){
     }
    #endif
 
-   // We have a new DAY? Reset the TX counter
+   // We have a new DAY, reset the TX counter
    if ( days != loraData[2] ) { totalTXms = 0; } // reset TX counter, we have a new day.
    
    setupLora();
+   
    // prepare data for ttn. Lower bits 1-2, are for batC,
    // low bits 3-7 are for TX seconds. Spare (last) bit for TODO (button)
-
    // totalTXms needs 5 bits
    loraData[1] = ((totalTXms / 1000 ) << 2) | vbatC; // Make room for 2 bits. Add the bits 1+2 (aka: OR vbatC)
    loraData[2] = days;                               // max 255 days.
@@ -58,7 +49,7 @@ void transmit(){
 
   startTXms = millis(); // count transmission duration. This is start. DONT MOVE
   #if PHONEY == 1
-    delay(680); // emulate SF11
+    delay(500); // emulates SF10 with 30 bytes
   #else
     lora.sendData(loraData, loraSize, fc, FramePort);
   #endif
@@ -82,7 +73,7 @@ void transmit(){
    ledDEBUG(7,30,100);
   #endif
   
-  fc++;
+  fc++; // Increase FrameCounter
 
   // calculate the total of transmission duration. This is the end.
   currentTXms = endTXtime - startTXms - 15; // TinyLoRa setup has delays 10 + 5
@@ -99,6 +90,7 @@ void transmit(){
     Serial.print(F("ms transmitted: ")); Serial.println(currentTXms);
     Serial.print(F("HEX: "));
     for ( uint8_t counter = 0; counter < loraSize; counter++ ) {
+      if ( loraData[counter] < 17 ) Serial.print("0"); // Add one zero if value is 0-F
         Serial.print(loraData[counter], HEX);Serial.print(F(" "));
       }
     Serial.println();
@@ -107,6 +99,10 @@ void transmit(){
   #endif
 
   // EVAL enable INT1 + INT2.
+  #if LISDH == 1 | MMA8452 == 1
+     //enablePinChange();
+     //readIRQ();
+  #endif
   
   // Stuck here...
   toBeOrNotToBe();             // decide to sleep or to wait.

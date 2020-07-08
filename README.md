@@ -9,9 +9,12 @@ What is supported:
 4. Cycle Power
 5. Respect to TTN limits (30 seconds per day)
 6. Randomness to vary transmissions (to avoid colissions with other static nodes)
-7. Info via LED
-8. Debugging via Serial (I hope you will not need this  - it also disables Deep Sleep)
-9. PHONEY mode. (for debugging - no transmission)
+7. Info / DEBUG via LED
+
+Debug options:
+1. Debugging via Serial (I hope you will not need this)
+2. PHONEY mode. (for debugging - no transmission. Emulates some transmission time)
+3. INDOOR mode (more debugging help)
 
 ## You need in both
 1. Modify `TinyLoRa.h` according to your region!
@@ -44,4 +47,6 @@ You can also find one third sketch: bike-tracker-clv. You will *also* need the l
 Extra things supported:
 1. Power Down (wake from accelerometer)
 2. Send location if the traveled distance is more than 50 meters.
-3. Connect INT1 pin fron LIS3DH to #10 of feather-32u4-LoRa
+
+### extra connections
+1. Connect INT1 pin fron LIS3DH to #10 of feather-32u4-LoRa

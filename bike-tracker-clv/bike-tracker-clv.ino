@@ -1,11 +1,11 @@
 // Bike tracker. Made by clavisound.
 // #define EU863 // BUG: TinyLoRa.h ignores this. Modify TinyLoRa.h else default is: US902. Other options: EU863, AU915, AS920
 
-// LoRa options
-#define SF        10      // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
+// LoRa and LoRaWAN options
+#define SF        10       // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
 #define CYCLESF   0       // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
-int8_t  txPower = 14;     // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
-uint16_t fc = 1;          // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
+int8_t  txPower = 3;      // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
+uint16_t fc = 0;          // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
 
 // FEATHER behaviour
 #define LED       2     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
@@ -68,11 +68,11 @@ uint32_t secondsSleep = 180;
   uint8_t  sats;                                      // satellites
   uint8_t noFixCount;                                 // in cloudy balcony fix after 70 seconds.
 
-  #define FRAME_PORT_GPS 7                            // TTN mapper to 8. 7th port for 5 floats precision.
+  #define FRAME_PORT_GPS 8                            // TTN mapper to 8. 7th port for 5 floats precision.
   #define LORA_TTNMAPPER 17                           // Data bytes
   uint32_t bootTime;
   uint32_t uptimeGPS;
-  uint32_t lastTXtime = 86400;                        // have to set this, otherwise first TX fails;
+  uint32_t lastTXtime = 86400;                        // have to set this, otherwise first TX fails
   uint8_t FramePort = FRAME_PORT_GPS;                 // port with GPS data
   uint8_t loraData[LORA_TTNMAPPER] = {};              // bytes to send
   uint8_t loraSize = LORA_TTNMAPPER;
@@ -153,7 +153,7 @@ uint32_t secondsSleep = 180;
 
 #if DEBUGINO == 0
   uint16_t wtimes;	    // watchdog times
-  bool     overflow;    // wtimes uint16_t MAX 65535 seconds aka 18.2 hours) 43200 = 12 hours. Handle that with overflow.
+  bool     overflow;    // TODO wtimes uint16_t MAX 65535 seconds aka 18.2 hours 43200 = 12 hours. Handle that with overflow.
   uint16_t sleepMS;     // normally 8000, maybe we can scrap this.
 #endif
 
@@ -161,7 +161,7 @@ uint32_t secondsSleep = 180;
 TinyLoRa lora = TinyLoRa(7, 8, 4);
 
 uint32_t uptime;   // uptime in ms
-uint8_t temp = 0;  // just a temp value
+uint8_t temp = 0;  // just a temp variable
 
 /* don't transmit more than 30 seconds per day. */
 // variables to calculate that.

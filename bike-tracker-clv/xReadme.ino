@@ -28,8 +28,8 @@
 // ACCEL       - Byte [DONE] + code [semiDONE]
 // Button      - Code [DONE] + resistor [DONE with internal pull-up] (interrupt code)
 // Buzzer      - Choose resistor (25ma max. EVAL 330Ohm)
-// GPS         - InProgress [semi-DONE, low quality with battery?]
-// Reed switch - Test with magnet [semi-DONE]
+// GPS         - DONE
+// Reed switch - Test with magnet [pre-testing]
 // BLE         - Installation + code
 
 // ChangeLog
@@ -40,9 +40,9 @@
 // GPS [Done] 23-apr-2020: Polling GPS with NeoGPS
 // GPS [Done] 24-apr-2020: TTNmapper payload, 23-apr-2020
 // GPS [Done] 24-apr-2020: Send some data to TTNmapper, 23-apr-2020
-// GPS TODO: get best fix? (with HDOP) - I think no, better with heading, 23-apr-2020.
+// GPS [Done]: get best fix? (with HDOP) - I think no, better with heading, 23-apr-2020.
 // GPS TODO: If heading changes send message, 23-apr-2020
-// GPS TODO: After stop send only once and restart with km/h >= 3, 23-apr-2020
+// GPS TODO [Discard]: After stop send only once and restart with km/h >= 3, 23-apr-2020
 // GPS TODO: When sleep if LED, is on, it stays on 23-apr-2020.
 // GPS TODO: Compare 24bits loc with 16bits, 23-apr-2020
 // GPS TODO: bike payload, 23-apr-2020
@@ -68,17 +68,17 @@
 // SYSTEM regression [Done] 6-may-2020: Wrong TX calculation [6-may-2020]
 
 // SYSTEM rename: lastTXtime endTXtime to GPSendTXdayTime endTXdayTime
-// SYSTEM: eval DAY reset (ex. every 3 hours) with GPS: [7-may-2020]
-// SYSTEM: I think I don't need lastTXtime but only uptimeGPS
-// GPS: if after 12 hours wake up, we are in different location, send LoRa
+// SYSTEM eval DAY reset (ex. every 3 hours) with GPS: [7-may-2020]
+// SYSTEM I think I don't need lastTXtime but only uptimeGPS
+// GPS if after 12 hours wake up, we are in different location, send LoRa
 
 // SYSTEM BUG #3 [Done] check BUG #8: GPS OFF via UART hangs something. (not the MCU, or Serial BUS, maybe the Interrupt BUS is constant ON?).
 
 // BUG #4 [Done] 29-Jun-2020 (Solution: temporarily disable watchdog ): Sends every 3-4 minutes unconditionally
-// BUG #5: Wrong uptime after fix.
+// BUG #5 [Done]: Wrong uptime after fix.
 // BUG #6: Wrong Fixes 2008,8,featherb,-, 0s, 2d200h, 3.44(84), 1, 14, 2020-06-20 08:44:29, -26.320642, -177.068324, 0m, 239km/h240, 0sats, 0.1, 867.5, SF9BW125, eui-b827ebfffe7eed02, -, 2#, -104, 0.5
 // BUG #7 [Done] 28-Jun-2020: Does not wake up if GPSsleep via UART! a) try to disable GPS with cable, then sleep. Solution: Exit checkFix() with return to free Serial1
-// BUG #8: GPS ON when Feather goToSleep(!) if DEBUGINO == 0 (!!)
+// BUG #8 [Done]: GPS ON when Feather goToSleep(!) if DEBUGINO == 0 (!!) Watchdog was waking the MCU.
 // BUG #9: Slow operation with Battery (3xAA eneloop style) vs USB (!)
 
 // Senario #1: GPS   fix and speed 0    > accel sensitive > power down > wait accel for ever.

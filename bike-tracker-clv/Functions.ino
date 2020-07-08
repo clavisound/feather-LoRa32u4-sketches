@@ -148,12 +148,12 @@ void toBeOrNotToBe(){
   #if DEBUGINO == 1 & GPS == 1 & LISDH == 0
     Serial.println(F("\n* ToBeA"));
     delay(secondsSleep * 1000);                // delay works with ms, so multiply with 1000
-    GPSsleep();                                // Hang here but wakes with LIS(?!)
+    GPSsleep();
   #endif
                                                
    #if DEBUGINO == 1 & GPS == 1 & LISDH == 1
      Serial.println(F("* toBeOrNotB"));
-      GPSsleep();                                // Hang here but wakes with LIS(?!)
+      GPSsleep();
       if ( speed < 5 ) {
         Serial.print(F("* Speed: "));Serial.println(speed);
         goToSleep();                             // sleep forever (wake with accel)  
@@ -164,14 +164,15 @@ void toBeOrNotToBe(){
       }
    #endif
 
-   #if DEBUGINO == 0 & GPS == 1 & LISDH == 1
-      GPSsleep();                                // If enabled, LIS does not wake up the device!
-      delay(2000);
+   #if DEBUGINO == 0 & GPS == 1 & ( LISDH == 1 | MMA8452 == 1)
+      GPSsleep();
+      sleepForSeconds(2);
       if ( speed < 5 ) {
        goToSleep();                              // sleep forever (wake with accel)  
       } else {
+  
         #if LED >= 2
-          blinks = ( secondsSleep - ( uptime - lastTXtime ) ) / 8;
+          blinks = ( secondsSleep - ( uptimeGPS - lastTXtime ) ) / 8;
           blinkLed(blinks, 1, 8000); // blink every 8 seconds
         #endif // LED >= 2
         
@@ -180,15 +181,4 @@ void toBeOrNotToBe(){
         #endif
       }
    #endif
-
-   #if DEBUGINO == 0 & GPS == 1 & ( LISDH == 1 | MMA8452 == 1)
-      #if LED >= 2
-          blinks = secondsSleep / 8;
-          blinkLed(blinks, 1, 8000); // blink every 8 seconds
-        #endif // LED == 2
-        
-        #if LED <= 1
-          sleepForSeconds(secondsSleep);
-        #endif // LED == 1
-   #endif // GPS == 0
 }

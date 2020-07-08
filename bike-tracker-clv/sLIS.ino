@@ -147,7 +147,7 @@ void enableTAP(){
   // EVAL with bike  8 for park.
   lis.configTap(1,1,1,1,1,1,8); // Enable Z2,Z1,Y2,Y1,X2,X1,threshold [default 10, 7bit]
 
-  lis.autoSleep(16, 64);        // theshold 3 [7bit], time-to-wake-and-to-wake 120 [8bit]
+  lis.autoSleep(16, 64);        // theshold 3 [7bit], time-to-sleep-and-to-wake 120 [8bit]
 
   // RESULTS
   // Rate 50 Hz

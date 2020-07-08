@@ -9,7 +9,7 @@
 #if INDOOR == 1
   #define NO_FIX_COUNT 8                   // debug indoors
 #else
-  #define NO_FIX_COUNT 480                 // normal operation (240 is ok with USB)
+  #define NO_FIX_COUNT 480                 // 8 minutes search for sats. (240 is ok powered from USB)
 #endif
 
 void checkFix() {
@@ -21,7 +21,7 @@ void checkFix() {
 
       fix = gps.read();
 
-      if (fix.hdop < HDOP_LIMIT && fix.hdop > 0 ) {    // MAX I have seen 8720 akai 8.7 DOP (NeoGPS multiplies * 1000)
+      if (fix.hdop < HDOP_LIMIT && fix.hdop > 0 ) {    // MAX I have seen 8720 aka 8.7 DOP (NeoGPS multiplies * 1000)
                                                        // In balcony with cloudy weather 2000 to 830
   
         #if DEBUGINO == 1
@@ -47,8 +47,6 @@ void checkFix() {
               printDebug();
             #endif
 
-            // WAS OK checkTXms();
-            
             return;
           }
       
@@ -74,6 +72,7 @@ void checkFix() {
           #endif
           
           prepareGPSLoRaData();
+          //return;
 
         } else if ( noFixCount <= NO_FIX_COUNT ) {           // Continue for number of failures (on update 1Hz every second)
           
@@ -97,9 +96,6 @@ void checkFix() {
 
             FramePort = FRAME_PORT_NO_GPS;
             loraSize = LORA_HEARTBEAT;
-
-            noFixCount = 0;                        // reset the counters for gps fixes
-            // WAS OK checkTXms();
             return;
         }
       } // no fix
@@ -188,29 +184,12 @@ void GPSsleep() {
   #else
     // delay(2000);                                 // MTK3339 needs some time. (2000 was fine, 100, 300 hangup) // TODO watchdog
   #endif
-
-/*
-  // EVAL BUG #8
-    if ( Serial1 ) Serial1.end();
-    //delay(2000);
-*/
 }
 
 void GPSwake() {
   #if DEBUGINO == 1
    Serial.print(F("\n* GPS ON"));
   #endif
-
-/*
-  // EVAL BUG #8
-  if ( Serial1.available() == 0 ) {
-   #if DEBUGINO == 1
-    Serial.print(F("\nStartSerialGPS\n"));
-   #endif
-   gpsPort.begin(9600);
-  }
- */
-  
 
   // digitalWrite(GPS_SLEEP_PIN, LOW);             // Power ON GPS.
   gps.send_P ( &gpsPort, F("PMTK000") );       // module wakes up with ANY communication
@@ -248,7 +227,7 @@ void checkSpeed() {
 
 void prepareGPSLoRaData(){
           FramePort = FRAME_PORT_GPS; // We have GPS data, choose decoder with GPS.
-          noFixCount = 0;           // reset the counters for gps fixes
+          noFixCount = 0;             // reset the counters for gps fixes
           loraSize = LORA_TTNMAPPER;
 
           // https://github.com/ricaun/esp32-ttnmapper-gps/blob/8d37aa60e96707303ae07ca30366d2982e15b286/esp32-ttnmapper-gps/lmic_Payload.ino#L21
@@ -293,16 +272,15 @@ void prepareGPSLoRaData(){
             displayGPS();
           #endif
           
-          // WAS OK checkTXms();                             // Transmit if we are between TTN limits
           return;
 }
 
 uint8_t checkDistance(){
-    // DEBUG: REMOVE FOR PRODUCTION
+    // DEBUG: COMMENT FOR PRODUCTION
     return 1;
        #if DEBUGINO == 1
           // EVAL Probably 400meters off in distance of 4000meters. So, for every 10m we have 1meter of mistake?
-          // Serial.print( F(" From WT (m): ") );
+          // Serial.print( F(" From WT (m): ") ); // WT == White Tower of Thessalonikiw
           // Serial.println( DistanceBetween(40.62635955 * 10E5, 22.948298 * 10E5, fix.latitude() * 10E5, fix.longitude() * 10E5 ));
 
           Serial.print( F("* Distance from Previous send: ") );
@@ -310,10 +288,7 @@ uint8_t checkDistance(){
           Serial.println( oldLat);Serial.println(oldLon);Serial.println(fix.latitude() * 10E5);Serial.println(fix.longitude() * 10E5 );
        #endif
 
-     // RESTORE / PRODUCTION OK
      if ( DistanceBetween(oldLat, oldLon, fix.latitude() * 10E5, fix.longitude() * 10E5 ) > 49 ) { // distance more than 49 meters
-     // DEBUG
-     //if ( DistanceBetween(oldLat, oldLon, fix.latitude() * 10E5, fix.longitude() * 10E5 ) > 0 ) {
       return 1;
      } else {
       return 0;
