@@ -8,7 +8,6 @@ void loop()
      #endif
      checkFix();
      readIRQ();                       // Read events from accelerometer TODO: MASK events to variable.
-     GPStime();updUptime();           // Get new time and store it to uptime.
      checkTXms();
     #endif
 
@@ -78,7 +77,11 @@ void loop()
 void loop()
 {
     #if CYCLESF == 0
-      checkFix();
+     #if DEBUGINO == 1
+       Serial.println("\n** Loop");
+     #endif
+     checkFix();
+     checkTXms();
     #endif
 
     #if CYCLESF == 1

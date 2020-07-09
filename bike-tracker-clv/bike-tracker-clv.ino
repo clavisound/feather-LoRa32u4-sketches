@@ -2,13 +2,13 @@
 // #define EU863 // BUG: TinyLoRa.h ignores this. Modify TinyLoRa.h else default is: US902. Other options: EU863, AU915, AS920
 
 // LoRa and LoRaWAN options
-#define SF        10       // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
+#define SF        9       // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
 #define CYCLESF   0       // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
-int8_t  txPower = 3;      // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
+int8_t  txPower = 14;      // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
 uint16_t fc = 0;          // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
 
 // FEATHER behaviour
-#define LED       2     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
+#define LED       3     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
 #define CHAOS     1     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +392 program bytes, +3 bytes RAM; [default 1]
 //
 
@@ -21,9 +21,9 @@ uint16_t fc = 0;          // framecounter. We need this variable if we sleep Whe
 //
 
 // DEBUG options
-#define DEBUGINO  0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
+#define DEBUGINO  1     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
 #define INDOOR    0     // [default 0] For DEBUG INDOORs
-#define PHONEY    0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define PHONEY    1     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 //
 
 // Data Packet to Send to TTN
@@ -228,9 +228,7 @@ void setup(){
     // If you change here the value, you may want to change the value NO_FIX_COUNT
     // in GPS.ino 
     gps.send_P ( &gpsPort, F("PMTK220,1000") );   // update 1time in 10seconds (value in ms) EVAL problem with 3000 and periodic
-
-    //gps.send_P ( &gpsPort, F("PMTK104") );      // Factory reset DOES NOT WORK?
-    
+    //gps.send_P ( &gpsPort, F("PMTK104") );       // Factory reset. Forgets almanac
     gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GCA
 
     bootTime = GPStime();  // Don't continue unless we have GPStime!

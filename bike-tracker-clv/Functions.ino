@@ -81,6 +81,8 @@ ISR(PCINT0_vect){
 }
 
 void goToSleep(){
+
+  GPSsleep();                    // Close GPS we are done
   
   #if DEBUGINO == 1
     Serial.print(F("\n* Sleep"));
@@ -145,15 +147,14 @@ void disablePinChange(){
 #endif // #if MMA8452 == 1 | LISDH == 1
 
 void toBeOrNotToBe(){
+  
   #if DEBUGINO == 1 & GPS == 1 & LISDH == 0
     Serial.println(F("\n* ToBeA"));
     delay(secondsSleep * 1000);                // delay works with ms, so multiply with 1000
-    GPSsleep();
   #endif
                                                
    #if DEBUGINO == 1 & GPS == 1 & LISDH == 1
      Serial.println(F("* toBeOrNotB"));
-      GPSsleep();
       if ( speed < 5 ) {
         Serial.print(F("* Speed: "));Serial.println(speed);
         goToSleep();                             // sleep forever (wake with accel)  
@@ -165,8 +166,7 @@ void toBeOrNotToBe(){
    #endif
 
    #if DEBUGINO == 0 & GPS == 1 & ( LISDH == 1 | MMA8452 == 1)
-      GPSsleep();
-      sleepForSeconds(2);
+      delay(2000);
       if ( speed < 5 ) {
        goToSleep();                              // sleep forever (wake with accel)  
       } else {
@@ -181,4 +181,8 @@ void toBeOrNotToBe(){
         #endif
       }
    #endif
+
+  #if DEBUGINO == 0 & GPS == 1 & ( LISDH == 0 & MMA8452 == 0)
+    delay(secondsSleep * 1000);                // delay works with ms, so multiply with 1000
+  #endif
 }

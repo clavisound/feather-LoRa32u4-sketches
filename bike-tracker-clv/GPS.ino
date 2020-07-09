@@ -28,8 +28,6 @@ void checkFix() {
           Serial.print(F("\nYES fix\n"));
         #endif
 
-        updUptime();
-
         speed = (int)fix.speed_kph();      
         // checkSpeed();                   // EVAL: modify GPS rate and TAP according to speed.
 
@@ -37,8 +35,11 @@ void checkFix() {
             #if DEBUGINO == 1
               Serial.println("* Will send GPS");
             #endif
+            
+            updUptime();
             prepareGPSLoRaData();
             return;
+            
           } else {                         // same location, send samelocation.
             FramePort = FRAME_PORT_NO_GPS; // TODO: PORT for same location
             loraSize = LORA_HEARTBEAT;     // don't send the GPS data.
@@ -49,30 +50,28 @@ void checkFix() {
 
             return;
           }
-      
       } else {                             // NO FIX
 
       #if DEBUGINO == 1
         Serial.print(F("Seeking FIX, UP secs: ")); Serial.println(uptime / 1000);
       #endif
 
-      #if LED == 3
-        ledDEBUG(1,1,1);
-      #endif
-
         // we have many efforts and bad quality HDOP. Don't waste energy with GPS seeking.
         // Send the message with LOW HDOP
-        if ( ++noFixCount >= 220 && fix.hdop >= HDOP_LIMIT ) {
+        if ( ++noFixCount >= NO_FIX_COUNT / 2 && fix.hdop >= HDOP_LIMIT ) {
            
-           updUptime();
-          
           #if DEBUGINO == 1
             Serial.print(F("High HDOP fix: GIVE UP secs: ")); Serial.println(uptime / 1000);
             displayGPS();
           #endif
-          
+
+         #if LED >= 2
+           ledDEBUG(5,10,1);
+         #endif
+
+          updUptime();
           prepareGPSLoRaData();
-          //return;
+          return;
 
         } else if ( noFixCount <= NO_FIX_COUNT ) {           // Continue for number of failures (on update 1Hz every second)
           
@@ -81,11 +80,13 @@ void checkFix() {
             displayGPS();
           #endif
 
+         #if LED >= 2
+           ledDEBUG(1,1,1);
+         #endif
+
           // checkPin(); // yes pin, works
           
         } else if ( noFixCount > NO_FIX_COUNT ) {            // Give UP
-
-          updUptime();
           
           #if DEBUGINO == 1
             Serial.print(F("No fix: GIVE UP secs: ")); Serial.println(uptime / 1000);
@@ -94,6 +95,7 @@ void checkFix() {
 
           // GPSsleep();
 
+            updUptime();
             FramePort = FRAME_PORT_NO_GPS;
             loraSize = LORA_HEARTBEAT;
             return;
@@ -164,6 +166,7 @@ void displayGPS() {
 // Second sleep      :
 // gps.send_P ( &gpsPort, F("PMTK225,0");
 
+// ATTENTION don't call this twice, or the GPS will wake! GPS wakes with *ANY* command
 void GPSsleep() {
   /* *SOMETIMES* the light stays ON after power OFF.
      The right procedure is here (NOT IMPLEMENTED)
@@ -180,9 +183,9 @@ void GPSsleep() {
   gps.send_P ( &gpsPort, F("PMTK161,0") );     // sleep (wake with any byte)
   //gps.send_P ( &gpsPort, F("PMTK225,9") );   // Periodic Mode, Always Locate (standby) 8 for standby, 9 for backup.
   #if LED == 3
-    // ledDEBUG(1, 1900, 100);
+    ledDEBUG(1, 1900, 100);
   #else
-    // delay(2000);                                 // MTK3339 needs some time. (2000 was fine, 100, 300 hangup) // TODO watchdog
+    delay(2000);                                 // MTK3339 needs some time. (2000 was fine, 100, 300 hangup) // TODO watchdog
   #endif
 }
 
@@ -214,7 +217,7 @@ void checkSpeed() {
       #if DEBUGINO == 1
        Serial.println(F("* checkSpeed0"));
       #endif
-      GPSsleep(); // enablePinChange(); setupLIS();
+      //GPSsleep(); // enablePinChange(); setupLIS();
     } else {
       GPSwake(); //disablePinChange();   // open GPS + TODO in-sensitive tap
     }
@@ -267,7 +270,6 @@ void prepareGPSLoRaData(){
           oldLat = fix.latitude() * 10E5;          // store lat / lon to compare with next fix.
           oldLon = fix.longitude() * 10E5;
 
-          //GPSsleep();                            // Close GPS we are done
           #if DEBUGINO == 1
             displayGPS();
           #endif
