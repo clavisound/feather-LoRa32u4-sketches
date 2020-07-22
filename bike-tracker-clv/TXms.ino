@@ -56,9 +56,16 @@ void checkTXms (){
       checkBatt();
       checkPin();
       transmit();
-    } else {
+      /*
+    } else if ( uptimeGPS - lastTXtime >= 240 ) { // We have too much time to wait. 4 minutes and more. Inform and sleep without fix.
       // TODO disablePinChange
       // TODO: send with FALL
+      printDebug();
+      Serial.println(F("\nWAY Too SOON! Wake in : "));Serial.println(secondsSleep - ( uptimeGPS - lastTXtime ) );
+      delay( ( secondsSleep - ( uptimeGPS - lastTXtime ) ) * 1000);    // We waited some time, so subtract it.
+      // checkFix(); // TODO: eval periodic mode
+      */
+    } else { // Wait and send data
       printDebug();
       Serial.println(F("\nToo SOON! wake in: "));Serial.println(secondsSleep - ( uptimeGPS - lastTXtime ) );
       delay( ( secondsSleep - ( uptimeGPS - lastTXtime ) ) * 1000);    // We waited some time, so subtract it.

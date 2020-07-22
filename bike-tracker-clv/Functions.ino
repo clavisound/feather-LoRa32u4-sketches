@@ -82,7 +82,9 @@ ISR(PCINT0_vect){
 
 void goToSleep(){
 
-  GPSsleep();                    // Close GPS we are done
+  #if GPS == 1
+    GPSsleep();                    // Close GPS we are done
+  #endif
   
   #if DEBUGINO == 1
     Serial.print(F("\n* Sleep"));
@@ -90,7 +92,7 @@ void goToSleep(){
   #endif
 
   #if LED == 3
-    ledDEBUG(3, 1000, 1000);
+    ledDEBUG(3, 1000, 750);
   #endif
 
   Watchdog.disable();                          // BUG #8 Solution.

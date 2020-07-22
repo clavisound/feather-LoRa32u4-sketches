@@ -7,7 +7,7 @@
 #define HDOP_LIMIT  4000
 
 #if INDOOR == 1
-  #define NO_FIX_COUNT 8                   // debug indoors
+  #define NO_FIX_COUNT 8                   // debug indoors with '8' led stays on with GPSsleep();
 #else
   #define NO_FIX_COUNT 480                 // 8 minutes search for sats. (240 is ok powered from USB)
 #endif
@@ -179,13 +179,17 @@ void GPSsleep() {
     Serial.print(F("\n* GPS OFF\n"));
 #endif
 
-  //digitalWrite(GPS_SLEEP_PIN, HIGH);         // Power OFF GPS.
-  gps.send_P ( &gpsPort, F("PMTK161,0") );     // sleep (wake with any byte)
-  //gps.send_P ( &gpsPort, F("PMTK225,9") );   // Periodic Mode, Always Locate (standby) 8 for standby, 9 for backup.
-  #if LED == 3
-    ledDEBUG(1, 1900, 100);
+  #if GPS_SLEEP_PIN == 1
+    digitalWrite(GPS_SLEEP_PIN, HIGH);         // Power OFF GPS.
   #else
-    delay(2000);                                 // MTK3339 needs some time. (2000 was fine, 100, 300 hangup) // TODO watchdog
+    gps.send_P ( &gpsPort, F("PMTK161,0") );     // sleep (wake with any byte)
+  //gps.send_P ( &gpsPort, F("PMTK225,9") );   // Periodic Mode, Always Locate (standby) 8 for standby, 9 for backup.
+  #endif
+  
+  #if LED == 3
+    // ledDEBUG(1, 1900, 100);
+  #else
+    // delay(2000);                                 // MTK3339 needs some time. (2000 was fine, 100, 300 hangup) // TODO watchdog
   #endif
 }
 
@@ -194,10 +198,13 @@ void GPSwake() {
    Serial.print(F("\n* GPS ON"));
   #endif
 
-  // digitalWrite(GPS_SLEEP_PIN, LOW);             // Power ON GPS.
-  gps.send_P ( &gpsPort, F("PMTK000") );       // module wakes up with ANY communication
+  #if GPS_SLEEP_PIN == 1
+   digitalWrite(GPS_SLEEP_PIN, LOW);             // Power ON GPS.
+  #else
+    gps.send_P ( &gpsPort, F("PMTK000") );       // module wakes up with ANY communication
   //gps.send_P ( &gpsPort, F("PMTK225,0") );   // disable Periodic.
   // delay(500);
+  #endif
 }
 
 void GPSfastRate() {

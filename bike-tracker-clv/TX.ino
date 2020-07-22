@@ -104,6 +104,5 @@ void transmit(){
      //readIRQ();
   #endif
   
-  // Stuck here...
   toBeOrNotToBe();             // decide to sleep or to wait.
 }

@@ -1,42 +1,43 @@
-// Bike tracker. Made by clavisound.
+// Bike tracker. Made by clavisound. 2020
 // #define EU863 // BUG: TinyLoRa.h ignores this. Modify TinyLoRa.h else default is: US902. Other options: EU863, AU915, AS920
 
 // LoRa and LoRaWAN options
-#define SF        9       // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
-#define CYCLESF   0       // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
-int8_t  txPower = 14;      // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
-uint16_t fc = 0;          // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
+// ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
+#define SECONDS_SLEEP 180  // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
+#define SF            10   // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
+#define POWER         14   // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
+#define FRAMECOUNTER  0    // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
 
 // FEATHER behaviour
 #define LED       3     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
 #define CHAOS     1     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +392 program bytes, +3 bytes RAM; [default 1]
+#define CYCLESF   0     // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
 //
 
 // DEVICE SELECTION
-#define GPS       1     // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
-#define LISDH     1     // [default 1] 0 for LIS3DH  accelerator, 1 for yes.
-//#define MMA8452   0   // [NOT SUPPORTED - FAILED EFFORT. After abuse it locks. Maybe with I2C it's reliable - also maybe my building enviroment was faulty.]
-                        // 0 to disable code for MMA8452 accelerator, 1 to enable.
-//#define BUZZER    1   // TODO [default 0] 1 to hear some beeps!
-//
+#define GPS           1     // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
+#define LISDH         1     // [default 1] 1 for LIS3DH  accelerator, 0 for no.
+#define GPS_SLEEP_PIN 0     // default 0. If `1' connect A4 (feather) to EN pin (Ultimate GPS)
+//#define MMA8452     0     // [NOT SUPPORTED - FAILED EFFORT. After abuse it locks. Maybe with I2C it's reliable - also maybe my building enviroment was faulty.]
+                            // 0 to disable code for MMA8452 accelerator, 1 to enable.
+//#define BUZZER      1     // TODO [default 0] 1 to hear some beeps!
 
 // DEBUG options
-#define DEBUGINO  1     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
+#define DEBUGINO  0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
 #define INDOOR    0     // [default 0] For DEBUG INDOORs
-#define PHONEY    1     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define PHONEY    0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 //
 
 // Data Packet to Send to TTN
 #define FRAME_PORT_NO_GPS 3             // Port without GPS data
 #define LORA_HEARTBEAT    5             // Data bytes
 
-// Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
-// ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
-uint32_t secondsSleep = 180;
-// ** THIS IS THE LIMIT OF THIS PROGRAM **, DO NOT USE LESS THAN 10 SECONDS!
-// uint32_t const secondsSleep = 10; // sleep for 10 seconds.
+uint32_t secondsSleep = SECONDS_SLEEP;
 
 #include <TinyLoRa.h>
+int8_t  txPower = POWER;
+uint16_t fc = FRAMECOUNTER;
+
 #include <SPI.h>
 #include <Adafruit_SleepyDog.h>
 
@@ -118,7 +119,7 @@ uint32_t secondsSleep = 180;
   #define INT_PIN_TEN    10
   #define INT_PIN_ELEVEN    11
 
-  #define LIS_RATE     50    // HZ - Samples per second - 1, 10, 25, 50, 100, 200, 400, 1600, 5000
+  #define LIS_RATE     10    // HZ - Samples per second - 1, 10, 25, 50, 100, 200, 400, 1600, 5000
   #define LIS_RANGE     2    // 2G, 4G, 8G, 16H
 
   uint16_t errorsAndWarnings = 0;
@@ -203,15 +204,12 @@ void setup(){
   #if LED == 0
     delay(STARTDELAY * 1000); // wait (value in ms) before sending 1st message
   #else
-    blinkLed(STARTDELAY, 250, 1000); // STARTDELAY times for Y duration and Z pause. (example is: 12, 250, 1000) aka 12 times, blink for 250 ms puse for 1 second.  
+    blinkLed(STARTDELAY, 250, 1000); // STARTDELAY times for Y duration and Z pause. (example is: 12, 250, 750) aka 12 times, blink for 250 ms puse for 750ms.  
   #endif
 
   #if LISDH == 1
    enablePinChange();
-  
-   pinMode(INT_PIN_TEN, INPUT_PULLUP);            // Setup the button pin
-   pinMode(INT_PIN_ELEVEN, INPUT_PULLUP);         // Setup the button pin
-  
+   pinMode(INT_PIN_ELEVEN, INPUT);                  // Setup the LIS INT
    setupLIS();
    
    // This order is important!
@@ -224,7 +222,7 @@ void setup(){
     pinMode(GPS_SLEEP_PIN, OUTPUT); // use GPS_SLEEP_PIN pin as output. HIGH to sleep.
     gpsPort.begin(9600);
 
-    // ATTENTION This setting is changing the wait times for fix in GPS.ino
+    // ATTENTION This setting (PMTK220) is changing the wait times for fix in GPS.ino
     // If you change here the value, you may want to change the value NO_FIX_COUNT
     // in GPS.ino 
     gps.send_P ( &gpsPort, F("PMTK220,1000") );   // update 1time in 10seconds (value in ms) EVAL problem with 3000 and periodic
@@ -235,7 +233,10 @@ void setup(){
   #endif
 
   // started
-  ledDEBUG(2, 500, 1000);
+  blinkLed(2, 500, 2000);
+
+  // DEUBUG - Sleep immediatelly
+ // goToSleep();// 4.3mA to 9.9mA (radio is active + ?)
 
   // QUESTION: Why I can't use the variable from second .cpp or .ino?
   //  Serial.print("Feather");Serial.println(feather);
