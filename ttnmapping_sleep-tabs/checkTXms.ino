@@ -16,9 +16,9 @@ void checkTXms (){
         // sleep for X time (calculate for the rest of 24 hours)
         delay(DAY - lastTXtime); // DAY = 86400000
       #else
-        uint16_t times = ((DAY - lastTXtime) / 1000) / 8; // sleep for a day.
+        times = ((DAY - lastTXtime) / 1000) / 8; // sleep for a day.
         for ( times > 0; times--; ) {
-            uint16_t sleepMS = Watchdog.sleep(8000);  // Sleep for up to 8 seconds
+            sleepMS = Watchdog.sleep(8000);  // Sleep for up to 8 seconds
             uptime += sleepMS;
         }
       #endif

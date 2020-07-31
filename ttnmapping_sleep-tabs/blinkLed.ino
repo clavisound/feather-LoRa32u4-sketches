@@ -7,7 +7,7 @@ void blinkLed(int16_t times, uint16_t duration, uint16_t pause){ // x, ms, ms
     #endif
     
     #if DEBUGINO == 0
-      uint16_t sleepMS = Watchdog.sleep(pause);  // Sleep for up to 8 seconds
+      sleepMS = Watchdog.sleep(pause);  // Sleep for up to 8 seconds
       uptime += sleepMS;
     #endif
   }

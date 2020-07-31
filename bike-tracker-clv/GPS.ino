@@ -93,8 +93,6 @@ void checkFix() {
             displayGPS();
           #endif
 
-          // GPSsleep();
-
             updUptime();
             FramePort = FRAME_PORT_NO_GPS;
             loraSize = LORA_HEARTBEAT;
@@ -166,12 +164,21 @@ void displayGPS() {
 // Second sleep      :
 // gps.send_P ( &gpsPort, F("PMTK225,0");
 
+void tristateSerialB(){ // FAILED!
+    pinMode(0, INPUT);        // RX pin (2.5mA)
+    digitalWrite (0, LOW);    //
+
+    pinMode(1, INPUT);        // TX pin. Go to INPUT_PULLUP
+    digitalWrite (1, LOW);    //
+    
+}
+
 // ATTENTION don't call this twice, or the GPS will wake! GPS wakes with *ANY* command
 void GPSsleep() {
   /* *SOMETIMES* the light stays ON after power OFF.
      The right procedure is here (NOT IMPLEMENTED)
     // a) Poll for led ON (is hardwired to FIX pin)
-    // b) Wait some ?? time
+    // b) Wait some 600ms??
     // c) Shutdown GPS
   */
 
@@ -181,9 +188,17 @@ void GPSsleep() {
 
   #if GPS_SLEEP_PIN == 1
     digitalWrite(GPS_SLEEP_PIN, HIGH);         // Power OFF GPS.
+    //tristateSerialB();
   #else
+    delay(900);
     gps.send_P ( &gpsPort, F("PMTK161,0") );     // sleep (wake with any byte)
-  //gps.send_P ( &gpsPort, F("PMTK225,9") );   // Periodic Mode, Always Locate (standby) 8 for standby, 9 for backup.
+
+    //* FAILED effort to disable UART
+    // delay(1000);
+    gpsPort.end();             // Close UART
+    delay(200);
+    //tristateSerialB();
+  //gps.send_P ( &gpsPort, F("PMTK225,9") );     // Periodic Mode, Always Locate (standby) 8 for standby, 9 for backup.
   #endif
   
   #if LED == 3
@@ -200,7 +215,10 @@ void GPSwake() {
 
   #if GPS_SLEEP_PIN == 1
    digitalWrite(GPS_SLEEP_PIN, LOW);             // Power ON GPS.
+   gpsPort.begin(9600);                          // Open UART
   #else
+    gpsPort.begin(9600);                          // Open UART
+    delay(1000);                                  // Wait UART to open
     gps.send_P ( &gpsPort, F("PMTK000") );       // module wakes up with ANY communication
   //gps.send_P ( &gpsPort, F("PMTK225,0") );   // disable Periodic.
   // delay(500);

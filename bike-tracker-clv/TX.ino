@@ -1,4 +1,11 @@
 void transmit(){
+
+  #if GPS == 1
+    #if INDOOR == 1
+      delay(500);          // When debuging with INDOOR, led stays on, wait half second for LED to power off.
+    #endif
+    GPSsleep();            // Close GPS we are done
+  #endif
   
   // EVAL disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
   #if LISDH == 1 | MMA8452 == 1
@@ -57,7 +64,6 @@ void transmit(){
   // Store the time of last TX.
   // Bear in mind that when we have DAY>0 we have to calculate the modulo.
   #if DEBUGINO == 1 & GPS == 0
-    //endTXtime = uptime % DAY;        // valid for delay without sleep. Get the remainder to have DAYtime
     endTXtime = millis() % DAY;        // valid for delay without sleep. Get the remainder to have DAYtime
   #elif DEBUGINO == 1 & GPS == 1
     endTXtime = millis();

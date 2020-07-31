@@ -82,9 +82,10 @@ ISR(PCINT0_vect){
 
 void goToSleep(){
 
-  #if GPS == 1
+  /* #if GPS == 1
     GPSsleep();                    // Close GPS we are done
   #endif
+  */
   
   #if DEBUGINO == 1
     Serial.print(F("\n* Sleep"));
@@ -108,6 +109,7 @@ void goToSleep(){
   //Watchdog.enable();
   Watchdog.reset();
 }  // end of goToSleep 
+
 void enablePinChange(){
   
   #if DEBUGINO == 1
@@ -155,7 +157,7 @@ void toBeOrNotToBe(){
     delay(secondsSleep * 1000);                // delay works with ms, so multiply with 1000
   #endif
                                                
-   #if DEBUGINO == 1 & GPS == 1 & LISDH == 1
+   #if DEBUGINO == 1 & GPS == 1 & ( LISDH == 1 | MMA8452 == 1 )
      Serial.println(F("* toBeOrNotB"));
       if ( speed < 5 ) {
         Serial.print(F("* Speed: "));Serial.println(speed);
@@ -184,7 +186,32 @@ void toBeOrNotToBe(){
       }
    #endif
 
-  #if DEBUGINO == 0 & GPS == 1 & ( LISDH == 0 & MMA8452 == 0)
+  #if DEBUGINO == 0 & GPS == 1 & ( LISDH == 0 & MMA8452 == 0 )
     delay(secondsSleep * 1000);                // delay works with ms, so multiply with 1000
   #endif
+
+  #if DEBUGINO == 1 & GPS == 0 & ( LISDH == 1 | MMA8452 == 1 )
+      Serial.print("Sleeping for: ");Serial.println(secondsSleep);
+      #if LED >= 2
+        blinks = ( secondsSleep - ( uptimeGPS - lastTXtime ) ) / 8;
+        blinkLed(blinks, 1, 8000); // blink every 8 seconds
+      #endif // LED >= 2
+        
+      #if LED <= 1
+        delay(secondsSleep * 1000);
+      #endif
+  #endif
+
+  #if DEBUGINO == 0 & GPS == 0 & ( LISDH == 1 | MMA8452 == 1 )
+      delay(2000);
+      #if LED >= 2
+        blinks = ( secondsSleep - ( uptimeGPS - lastTXtime ) ) / 8;
+        blinkLed(blinks, 1, 8000); // blink every 8 seconds
+      #endif // LED >= 2
+        
+      #if LED <= 1
+        delay(secondsSleep * 1000);
+      #endif
+  #endif
+  
 }

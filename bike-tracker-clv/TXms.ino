@@ -99,6 +99,11 @@ void checkTXms (){
       transmit();
     #endif
 
+    #if GPS == 0 & (LISDH == 1 | MMA8452 == 1)
+      checkBatt();
+      transmit();
+    #endif
+
     #if GPS == 1 & (LISDH == 0 & MMA8452 == 0)
       checkBatt();
       transmit();

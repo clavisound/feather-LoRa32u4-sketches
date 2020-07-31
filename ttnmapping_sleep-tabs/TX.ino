@@ -70,10 +70,10 @@ void transmit(){
   #endif
   
   // EVAL Sleep without LED
-  #if LED == 0 & DEBUGINO == 0
-    uint16_t times = blinks;
+  #if LED <= 1 & DEBUGINO == 0
+    times = blinks;
     for ( times > 0; times--; ) {
-     uint16_t sleepMS = Watchdog.sleep(8000);  // Sleep for up to 8 seconds
+     sleepMS = Watchdog.sleep(8000);  // Sleep for up to 8 seconds
      uptime += sleepMS;
      // EVAL
      sleepMS = Watchdog.sleep(randMS);  // Sleep for random time

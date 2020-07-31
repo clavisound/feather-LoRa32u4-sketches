@@ -1,4 +1,4 @@
-// MMA7452 accelorometer setup and functions. (you need my library)
+// MMA8452 accelorometer setup and functions. (you need my library)
 
 #if MMA8452 == 1
 void setupMMA(){
@@ -6,7 +6,7 @@ void setupMMA(){
       #if LED == 1
         blinkLed(40, 50, 100); // fast blink for MMA error
       #endif
-    while (1);
+    goToSleep(); // hang for ever.
   }
 
   accel.reset();
@@ -24,16 +24,17 @@ void setupMMA(){
   
   //accel.setupMotion();      // defaults (latch, freefall, axes [1 = X, 3 = X+Y, 7 = X+Y+Z], threshold, debounce)
                               // accel.setupMotion(1,0,3,3,5)
-  //accel.setupMotion(1,0,7,1,1);
+  accel.setupMotion(1,0,7,1,1);
 
-  accel.setupTap(0x10, 0x80, 0x80);                  // enable taps on X, Y, Z 0x80 to disable
-
-  accel.setupPL(0x05);                               // debounce rate, default 0x50
+  accel.setupTap(0x10, 0x10, 0x80);                  // enable taps on X, Y, Z 0x80 to disable
+  
+  //accel.setupPL(0x05);                               // debounce rate, default 0x50
+  accel.setupPL(0x50);                               // debounce rate, default 0x50
 
   // EVAL
   //accel.lowPowerAN();
 
-  accel.enableEvents(1,0,1,1,0);                     // sleep, transient, orientation, tap, motion
+  accel.enableEvents(0,0,0,1,0);                     // sleep, transient, orientation, tap, motion
   accel.interruptPin(0,0,0,0,0,1,0);                 // sleep, transient, orientation, tap, motion, polarity, opendrain
                                                      // 1 = pin1 0 = pin2.
   accel.setDataRate(ODR_12);
@@ -42,10 +43,10 @@ void setupMMA(){
   
   #endif
 
-  pinMode(INT_PIN_TEN, INPUT);            // Setup the button pin
-  pinMode(INT_PIN_ELEVEN, INPUT);         // Setup the button pin
-  digitalWrite (INT_PIN_TEN, LOW);        // disable pull-up on button
-  digitalWrite (INT_PIN_ELEVEN, LOW);     // disable pull-up on button
+  pinMode(INT_PIN_TEN, INPUT);            // Pin for INT #1
+  pinMode(INT_PIN_ELEVEN, INPUT);         // Pin for INT #2
+  digitalWrite (INT_PIN_TEN, LOW);        // disable pull-up
+  digitalWrite (INT_PIN_ELEVEN, LOW);     // disable pull-up
   
 }
 
@@ -91,29 +92,31 @@ void readMMA(){
        Serial.print("\n");
      #endif
      #if LED == 1
-       digitalWrite (LED_BUILTIN, HIGH);
-       delay (10);
-       digitalWrite (LED_BUILTIN, LOW);
+       ledDEBUG(3,10,10);
      #endif
    }
    #if DEBUGINO == 1
-     Serial.print("interruptEventMMAs: ");Serial.print(interruptEventMMA);
+     Serial.print("interruptEvents: ");Serial.print(interruptEvent);
      Serial.print(", Wake or sleep: ");Serial.print(accel.wakeOrSleep());
      Serial.print(", Interrupt Reason: ");Serial.print(evntMMA);
      Serial.print("\nUptime: ");Serial.println(millis() / 1000);
    #endif
-   interruptEventMMA = 0;
+   interruptEvent = 0;
 }
 
 void readIRQMMA(){
-  if ( interruptEventMMA > 0 ) {
+  if ( interruptEvent > 0 ) {
    readMMA();
   }
 }
 
 uint8_t checkFall(){
    // first thing to do: check if we don't transmitted according to secondsSleep
-   if ( GPStime() - endTXtime < secondsSleep ) {          // continue to sleep.        
+   #if GPS == 1
+     if ( GPStime() - endTXtime < secondsSleep ) {          // continue to sleep.        
+   #else
+    if ( uptime - endTXtime < secondsSleep ) {          // continue to sleep.
+   #endif
       // EVAL transmit only on Orientation change.
       //uint8_t evntMMA = accel.readIRQEvent();
    
@@ -137,8 +140,8 @@ void disableTAPmma(){
 }
 
 void wakeFromMMA(){
-    if ( interruptEventMMA > 0 ) {
-      interruptEventMMA = 0;       // we woke up.
+    if ( interruptEvent > 0 ) {
+      interruptEvent = 0;       // we woke up.
       disablePinChange();       // disable Interrupts
     }
 
@@ -147,5 +150,49 @@ void wakeFromMMA(){
     //#if DEBUGINO == 1
     //  Serial.print("Orientation: ");Serial.println(orientation);
     //#endif
+}
+
+void readIRQ(){
+  #if DEBUGINO == 1
+    // Serial.print("\n* readIRQ\n");
+  #endif
+  
+  if ( interruptEvent > 0 ) { // nornally > 0 but LIS3DH fires two INTerrupts on setup!
+    #if DEBUGINO == 1
+      Serial.print("# of events: ");Serial.println(interruptEvent);
+    #endif
+    
+    interruptEvent = 0;
+    checkPin();
+  }
+}
+
+void checkPin(){
+  #if DEBUGINO == 1
+   Serial.println("* checkPin");
+  #endif
+  if ( digitalRead(INT_PIN_TEN) == 1 ) { // blink on connection.
+   #if DEBUGINO == 1
+    Serial.println(F("\npin #10 INT1\n"));
+   #endif
+   #if LED == 3
+    ledDEBUG(1, 1000, 200);
+   #endif
+   #if LED == 1
+    ledDEBUG(1,10,0);
+   #endif
+  }
+  if ( digitalRead(INT_PIN_ELEVEN) == 1 ) { // blink on connection.
+   #if DEBUGINO == 1
+    Serial.println(F("\npin #11 INT2\n"));
+   #endif
+   #if LED == 3
+    ledDEBUG(1, 5000, 200);
+   #endif
+   #if LED == 1
+    ledDEBUG(2,10,10);
+   #endif
+  }
+  readMMA();
 }
 #endif

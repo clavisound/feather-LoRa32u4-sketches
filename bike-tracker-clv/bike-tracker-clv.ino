@@ -4,29 +4,29 @@
 // LoRa and LoRaWAN options
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
 #define SECONDS_SLEEP 180  // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
+// Take care with SF11-SF12! https://lora-alliance.org/sites/default/files/2018-11/Oct122018_NetID_Alloc_Policy_Application_V3.pdf
+// "network providers (such as TTN) are required to actively block devices that always send on SF11 or SF12, to keep their LoRa Alliance NetID."
 #define SF            10   // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
 #define POWER         14   // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
 #define FRAMECOUNTER  0    // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
 
 // FEATHER behaviour
-#define LED       3     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
+#define LED       1     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
 #define CHAOS     1     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +392 program bytes, +3 bytes RAM; [default 1]
 #define CYCLESF   0     // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
-//
 
 // DEVICE SELECTION
-#define GPS           1     // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
-#define LISDH         1     // [default 1] 1 for LIS3DH  accelerator, 0 for no.
+#define GPS           0     // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
+#define LISDH         0     // [default 1] 1 for LIS3DH  accelerator, 0 for no.
 #define GPS_SLEEP_PIN 0     // default 0. If `1' connect A4 (feather) to EN pin (Ultimate GPS)
-//#define MMA8452     0     // [NOT SUPPORTED - FAILED EFFORT. After abuse it locks. Maybe with I2C it's reliable - also maybe my building enviroment was faulty.]
+#define MMA8452       1     // [NOT SUPPORTED - FAILED EFFORT. After abuse it locks. Maybe with I2C it's reliable - also maybe my building enviroment was faulty.]
                             // 0 to disable code for MMA8452 accelerator, 1 to enable.
 //#define BUZZER      1     // TODO [default 0] 1 to hear some beeps!
 
 // DEBUG options
-#define DEBUGINO  0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
+#define DEBUGINO  1     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
 #define INDOOR    0     // [default 0] For DEBUG INDOORs
-#define PHONEY    0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
-//
+#define PHONEY    1     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 
 // Data Packet to Send to TTN
 #define FRAME_PORT_NO_GPS 3             // Port without GPS data
@@ -99,7 +99,7 @@ uint16_t fc = FRAMECOUNTER;
   #define MSKTRS   0x20             //Transient
 
   uint8_t evntMMA;                           // event type
-  volatile uint8_t interruptEventMMA = 0;    // 0 for no interruptEvent
+  volatile uint8_t interruptEvent = 0;    // 0 for no interruptEvent
   uint8_t orientation;                       // 0 (right fall), 1 (left fall), 2 (normal), 3 (upside down), 64 (endo or whellie)
   uint8_t tap;                               // 16 tap on X, 24 double? tap X, 17 tap Y, 25 double? tap Y,
                                              // 64 tap from behind?
@@ -116,7 +116,7 @@ uint16_t fc = FRAMECOUNTER;
   #include <avr/sleep.h>
   #include <avr/power.h>
 
-  #define INT_PIN_TEN    10
+  #define INT_PIN_TEN       10
   #define INT_PIN_ELEVEN    11
 
   #define LIS_RATE     10    // HZ - Samples per second - 1, 10, 25, 50, 100, 200, 400, 1600, 5000
@@ -217,9 +217,16 @@ void setup(){
    enableTAP();
    readLIS();
   #endif
+
+  #if MMA8452 == 1
+    enablePinChange();
+    setupMMA();
+    //readMMA();
+  #endif
   
   #if GPS == 1
     pinMode(GPS_SLEEP_PIN, OUTPUT); // use GPS_SLEEP_PIN pin as output. HIGH to sleep.
+    // digitalWrite(GPS_SLEEP_PIN, LOW);
     gpsPort.begin(9600);
 
     // ATTENTION This setting (PMTK220) is changing the wait times for fix in GPS.ino
@@ -229,14 +236,14 @@ void setup(){
     //gps.send_P ( &gpsPort, F("PMTK104") );       // Factory reset. Forgets almanac
     gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GCA
 
+    Serial1.end();          // close UART, because GPSwake hangs when UART is already open.
+    delay(3000);
+
     bootTime = GPStime();  // Don't continue unless we have GPStime!
   #endif
 
   // started
   blinkLed(2, 500, 2000);
-
-  // DEUBUG - Sleep immediatelly
- // goToSleep();// 4.3mA to 9.9mA (radio is active + ?)
 
   // QUESTION: Why I can't use the variable from second .cpp or .ino?
   //  Serial.print("Feather");Serial.println(feather);

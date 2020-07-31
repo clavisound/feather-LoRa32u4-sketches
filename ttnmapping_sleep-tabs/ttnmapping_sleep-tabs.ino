@@ -1,12 +1,12 @@
 // ttnmapping with static SF or variabLEle SF. Made by clavisound started from: https://learn.adafruit.com/the-things-network-for-feather/using-a-feather-32u4
 // #define EU863 // BUG: TinyLoRa.h ignores this. If not defined default is: US902. Other options: EU863, AU915, AS920
 
-#define SF         9   // SF7 to SF12
+#define SF         7   // SF7 to SF12
 #define DEBUGINO   0   // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
 #define PHONEY     0   // 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 #define CYCLESF    0   // 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
 #define CHAOS      1   // 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +212 program bytes, +33 bytes RAM; [default 1]
-#define LED        0   // 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] [default: 2]
+#define LED        1   // 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] [default: 2]
 #define USBSERIAL  0   // 1 = to enable serial, 0 to save battery.
 
 #include <TinyLoRa.h>
@@ -14,7 +14,7 @@
 #include <Adafruit_SleepyDog.h>
 
 // Data Packet to Send to TTNN
-int8_t txPower = 14;      // valid values -80, 0-20. For EU max limit is 14dBm
+int8_t txPower = 0;      // valid values -80, 0-20. For EU max limit is 14dBm
 uint8_t FramePort = 3;    // latest is 3
 uint8_t loraData[5] = {}; // bytes to send. 5 = 5bytes
 uint16_t fc = 0;          // framecounter. We need this if we sleep. In that case lora module forgets everything. TODO store in EEPROM.
@@ -26,7 +26,7 @@ uint32_t const secondsSleep = 86400;
 // uint32_t const secondsSleep = 10; // sleep for 10 seconds.
 
 #define DAY 86400000 // = day in ms. Use to comply with TTN policy
-#define TXMS 29000   // = TTN limit 30.000ms (30 seconds) per day.
+#define TXMS 10000   // = TTN limit 30.000ms (30 seconds) per day.
 
 // battery pin
 #define VBATPIN A9
@@ -58,6 +58,11 @@ uint16_t randMS; // used to random sleep
 *  Example: 100 seconds / 5 = 20 blinks, another example: 600 seconds / 5 = 120 blinks.
 */
 uint16_t blinks = secondsSleep / 8; // 8 = seconds maximum of watchdog
+
+#if DEBUGINO == 0
+  uint16_t times;
+  uint16_t sleepMS;
+#endif
 
 // after 24 hours (86.400.000 millis), we can re-send messages if we hit the wall (TTN rule)
 // millis are rollover after 49 days and 17 hours

@@ -86,3 +86,7 @@
 // Senario #3: GPS fix and speed over 0 > accel insensitive > scan every three minutes
 // Senario #4: GPS same location        > accel insensitive > scan every three minutes
 // Senario #5: Bike Fall                > send message unconditionally.
+
+// SYSTEM: FEATHER 32u4 Deep Sleep = 0.2mA - 0.3mA, 0.7mA LIS3DH, GPS 1.5mA, RFM95 adds 2ma if not sleeping.
+// Sleep without LoRa Sleeping 4.5mA (PHONEY RFM95 not sleeping)
+// Sleep with all systems down: 2.5mA
