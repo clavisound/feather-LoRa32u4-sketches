@@ -2,7 +2,7 @@ void setupLora()
 {   
   // Initialize LoRa
   #if DEBUGINO == 1
-    Serial.print("Starting LoRa...");
+    Serial.print("\n* LoRa...");
   #endif
   lora.setChannel(MULTI); // define multi-channel sending or CH0, CH1 to CH7
 
@@ -46,7 +46,7 @@ void setupLora()
     while(true);
   }
   #if DEBUGINO == 1
-    Serial.println("LoRa ok");
+    Serial.println(" ok");
   #endif
 
   // ATTN: it hangs if it's *BEFORE* lora.begin

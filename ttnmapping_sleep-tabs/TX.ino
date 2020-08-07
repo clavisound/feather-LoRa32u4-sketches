@@ -73,11 +73,14 @@ void transmit(){
   #if LED <= 1 & DEBUGINO == 0
     times = blinks;
     for ( times > 0; times--; ) {
-     sleepMS = Watchdog.sleep(8000);  // Sleep for up to 8 seconds
-     uptime += sleepMS;
+     uptime += Watchdog.sleep(8000);  // Sleep for up to 8 seconds
      // EVAL
-     sleepMS = Watchdog.sleep(randMS);  // Sleep for random time
-     uptime += sleepMS;
+     uptime += Watchdog.sleep(randMS);  // Sleep for random time
     }
+  #endif
+
+  #if LED <= 1 & DEBUGINO == 1
+    Serial.println("Sleeping...");
+    delay(secondsSleep * 1000); // delay works with ms, so multiply with 1000
   #endif
 }

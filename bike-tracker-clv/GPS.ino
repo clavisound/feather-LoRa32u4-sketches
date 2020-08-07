@@ -1,28 +1,40 @@
-// Freaky IDEA: don't send zeroed bytes, instead change port accordingly.
-// Freaky IDEA #2: with port offset the variables. ex: port 80 for speeds over 90
+// IDEA: don't send zeroed bytes, instead change port accordingly.
+// IDEA #2: with port offset the variables. ex: port 80 for speeds over 90
 // TODO: Send fix on heading change or time. Whichever comes first.
+// TO test: Periodic (ex. if speed > 10)
 
 #if GPS == 1
 
-#define HDOP_LIMIT  4000
+#define HDOP_LIMIT  4000                   // good quality at 4000, faster fix for greater values.
 
 #if INDOOR == 1
   #define NO_FIX_COUNT 8                   // debug indoors with '8' led stays on with GPSsleep();
 #else
-  #define NO_FIX_COUNT 480                 // 8 minutes search for sats. (240 is ok powered from USB)
+  #define NO_FIX_COUNT 254                 // over 2 minutes. Some days 500 seconds are not enough!
 #endif
 
 void checkFix() {
 
-   GPSwake();
+  GPSwake();
+  gps.send_P ( &gpsPort, F("PMTK225,0") );  // disable periodic.
   
   while ( 1 ) {                                    // run forever (until return)
     while (gps.available( Serial1 )) {             // Read only one character, so you have to call it FAST.
 
       fix = gps.read();
 
-      if (fix.hdop < HDOP_LIMIT && fix.hdop > 0 ) {    // MAX I have seen 8720 aka 8.7 DOP (NeoGPS multiplies * 1000)
-                                                       // In balcony with cloudy weather 2000 to 830
+      if ( fix.satellites < 3 && fix.hdop > HDOP_LIMIT ) {
+        blinkLed(1,15,16);
+        // sleepForSeconds(16,8);
+        // EVAL: return;?
+        } 
+      if ( fix.satellites == 3 && fix.hdop > HDOP_LIMIT ) {
+        blinkLed(1,15,3);
+        // sleepForSeconds(3,1);
+        }
+
+      if ( fix.hdop < HDOP_LIMIT && fix.hdop > 0 ) {    // MAX I have seen 8720 aka 8.7 DOP (NeoGPS multiplies * 1000)
+                                                        // In balcony with cloudy weather 2000 to 830
   
         #if DEBUGINO == 1
           Serial.print(F("\nYES fix\n"));
@@ -36,7 +48,6 @@ void checkFix() {
               Serial.println("* Will send GPS");
             #endif
             
-            updUptime();
             prepareGPSLoRaData();
             return;
             
@@ -66,7 +77,7 @@ void checkFix() {
           #endif
 
          #if LED >= 2
-           ledDEBUG(5,10,1);
+           //ledDEBUG(5,10,100);
          #endif
 
           updUptime();
@@ -81,7 +92,7 @@ void checkFix() {
           #endif
 
          #if LED >= 2
-           ledDEBUG(1,1,1);
+//           ledDEBUG(1,1,0);
          #endif
 
           // checkPin(); // yes pin, works
@@ -96,6 +107,7 @@ void checkFix() {
             updUptime();
             FramePort = FRAME_PORT_NO_GPS;
             loraSize = LORA_HEARTBEAT;
+
             return;
         }
       } // no fix
@@ -152,10 +164,16 @@ void displayGPS() {
 // gps.send_P ( &gpsPort, F("PMTK103") );      // Ephemeris, almanac, time, Position, delete
 // gps.send_P ( &gpsPort, F("PMTK104") );      // Factory reset
 // gps.send_P ( &gpsPort, F("PMTK161,0") );    // Standby (wake with any byte)
-// gps.send_P ( &gpsPort, F("PMTK220,3000") ); // update 1time in 10s (value in ms)
+//                          $PMTK161,1         // "Sleep" (7mA)
+// gps.send_P ( &gpsPort, F("PMTK220,3000") ); // update 1time in 3s (value in ms)
 // gps.send_P ( &gpsPort, F("PMTK869,1") );    // EASY enabled (guick fix with 1Hz update
 
-// gps.send_P ( &gpsPort, F("PMTK225,2,120000,43200000,240000,4320000") ); // Periodic Mode:
+// Periodic Mode:
+// gps.send_P ( &gpsPort, F("PMTK225,2,120000,43200000,240000,4320000") );
+// gps.send_P ( &gpsPort, F("PMTK225,2,3000,30000,6000,60000") ); // EVAL;
+// gps.send_P ( &gpsPort, F("PMTK225,4") ); // EVAL Perpetual
+// PMTK225,1,3000,12000,18000,72000 = periodic mode with 3s in tracking mode and 12s in backup mode based on GPS&GLONASS.
+// The average current consumption is calculated as below:I periodic = (I tracking×T1+I backup×T2)/ (T1+T2)=(26mA×3s + 0.007mA×12s)/(3s+12s)≈5.2(mA)
 // Parameters
 // MODE              : 0 disable auto sleep 1 backup 2 standby 4 perpetual 8 AlwaysLocateTM standby 9 AlwaysLocateTM backup.
 // Try for FIX for ms: 0 disable 1000-518400000 (144 hours!) (120000 = two minutes)
@@ -182,47 +200,80 @@ void GPSsleep() {
     // c) Shutdown GPS
   */
 
-#if DEBUGINO == 1
+  #if DEBUGINO == 1
     Serial.print(F("\n* GPS OFF\n"));
-#endif
+  #endif
 
   #if GPS_SLEEP_PIN == 1
     digitalWrite(GPS_SLEEP_PIN, HIGH);         // Power OFF GPS.
     //tristateSerialB();
   #else
-    delay(900);
-    gps.send_P ( &gpsPort, F("PMTK161,0") );     // sleep (wake with any byte)
 
-    //* FAILED effort to disable UART
-    // delay(1000);
-    gpsPort.end();             // Close UART
-    delay(200);
-    //tristateSerialB();
-  //gps.send_P ( &gpsPort, F("PMTK225,9") );     // Periodic Mode, Always Locate (standby) 8 for standby, 9 for backup.
+  #if GPS_TRANSISTOR_PIN == 0
+    delay(900);                                  // Hack for the light for first run.
   #endif
+    
+  gps.send_P ( &gpsPort, F("PMTK161,0") );       // sleep (wake with any byte)
+  // +1.5mA??
+  // gps.send_P ( &gpsPort, F("PMTK161,1") );    // standby(wake with any byte) (HANG on wake up)
+
+  // We are in #else
+  #if GPS_TRANSISTOR_PIN == 1             // First thing to do, power up GPS
+    pinMode(PNP_GPS_PIN, OUTPUT);          // Initialize pin LED_BUILTIN as an output
+    digitalWrite(PNP_GPS_PIN, HIGH);       // Power off GPS
+    #if DEBUGINO == 1
+      Serial.println("\n PNP off");
+    #endif
+  #endif
+
+
+   #if TRISTATE == 1
+     //* FAILED (?) effort to Tristate
+     // delay(1000);
+     gpsPort.end();             // Close UART
+     delay(1000);
+   //tristateSerialB();
+   #endif // TRISTATE
+  //gps.send_P ( &gpsPort, F("PMTK225,9") );     // Periodic Mode, Always Locate (standby) 8 for standby, 9 for backup.
+  #endif // GPS_SLEEP_PIN (else)
   
   #if LED == 3
     // ledDEBUG(1, 1900, 100);
   #else
-    // delay(2000);                                 // MTK3339 needs some time. (2000 was fine, 100, 300 hangup) // TODO watchdog
+    sleepForSeconds(1,2);                       // MTK3339 needs some time. (2000 was fine, 100, 300 hangup)
   #endif
 }
 
 void GPSwake() {
   #if DEBUGINO == 1
-   Serial.print(F("\n* GPS ON"));
+   Serial.print(F("\n* GPS ON\n"));
+   delay(200);
   #endif
 
+  #if GPS_TRANSISTOR_PIN == 1             // First thing to do, power up GPS
+   pinMode(PNP_GPS_PIN, OUTPUT);    // Initialize pin LED_BUILTIN as an output
+   digitalWrite(PNP_GPS_PIN, LOW);  // Power on GPS
+   #if DEBUGINO == 1
+     Serial.println("\n PNP on");
+   #endif
+   delay(200);
+ #endif
+
   #if GPS_SLEEP_PIN == 1
-   digitalWrite(GPS_SLEEP_PIN, LOW);             // Power ON GPS.
-   gpsPort.begin(9600);                          // Open UART
-  #else
-    gpsPort.begin(9600);                          // Open UART
-    delay(1000);                                  // Wait UART to open
+    digitalWrite(GPS_SLEEP_PIN, LOW);             // Power ON GPS.
+    #if TRISTATE == 1
+      gpsPort.begin(9600);                          // Open UART
+    #endif // TRISTATE
+  #else // GPS_SLEEP_PIN != 0
+    #if TRISTATE == 1
+      gpsPort.begin(9600);                          // Open UART
+      delay(1000);                                  // Wait UART to open
+  #endif // GPS_SLEEP_PIN
     gps.send_P ( &gpsPort, F("PMTK000") );       // module wakes up with ANY communication
-  //gps.send_P ( &gpsPort, F("PMTK225,0") );   // disable Periodic.
-  // delay(500);
-  #endif
+    delay(200);
+  //gps.send_P ( &gpsPort, F("PMTK225,0") );     // disable Periodic.
+  delay(200);
+  #endif // GPS_SLEEP_PIN
 }
 
 void GPSfastRate() {
@@ -254,6 +305,9 @@ void checkSpeed() {
 }
 
 void prepareGPSLoRaData(){
+  #if DEBUGINO == 1
+    Serial.println("* prepareGPSLoRa");
+  #endif
           FramePort = FRAME_PORT_GPS; // We have GPS data, choose decoder with GPS.
           noFixCount = 0;             // reset the counters for gps fixes
           loraSize = LORA_TTNMAPPER;
@@ -303,8 +357,8 @@ void prepareGPSLoRaData(){
 }
 
 uint8_t checkDistance(){
-    // DEBUG: COMMENT FOR PRODUCTION
-    return 1;
+    GPS_old_time = fix.dateTime;
+    // return 1; // Uncomment for DEBUG (send whatever the distance is...)
        #if DEBUGINO == 1
           // EVAL Probably 400meters off in distance of 4000meters. So, for every 10m we have 1meter of mistake?
           // Serial.print( F(" From WT (m): ") ); // WT == White Tower of Thessalonikiw
@@ -334,23 +388,28 @@ uint32_t GPStime() {
     while (gps.available( Serial1 )) {        // Read only one character, so you have to call it FAST.
       fix = gps.read();
 
-      if (fix.valid.location ) {               // ... unless we have location. Then we have time.
+      if ( fix.valid.location ) {               // ... unless we have location. Then we have time.
         return fix.dateTime;
       } else if ( fix.dateTime < 2432123456 ) {  // ... unless date is before 2080. THIS IS HACK. Problem for 2080 and onwards! Device / library specific.
+            
+            #if DEBUGINO == 1
+              Serial.print("time: "); Serial.println(fix.dateTime);
+              Serial.print("millis (s): "); Serial.println(millis() / 1000);
+            #endif
+            
         return fix.dateTime;
         
         #if INDOOR == 1
           } else if ( fix.dateTime > 2432123456 ) {  // DEBUG Indoors
+            
+            #if DEBUGINO == 1
+              Serial.print("time: "); Serial.println(fix.dateTime);
+              Serial.print("millis (s): "); Serial.println(millis() / 1000);
+            #endif
+            
           return fix.dateTime;
-        #endif
-        
+        #endif     
       }
-
-#if DEBUGINO == 1
-      Serial.print("time: "); Serial.println(fix.dateTime);
-      Serial.print("millis (s): "); Serial.println(millis() / 1000);
-#endif
-
     }
   }
 }

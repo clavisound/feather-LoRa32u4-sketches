@@ -78,8 +78,9 @@
 // BUG #5 [Done]: Wrong uptime after fix.
 // BUG #6: Wrong Fixes 2008,8,featherb,-, 0s, 2d200h, 3.44(84), 1, 14, 2020-06-20 08:44:29, -26.320642, -177.068324, 0m, 239km/h240, 0sats, 0.1, 867.5, SF9BW125, eui-b827ebfffe7eed02, -, 2#, -104, 0.5
 // BUG #7 [Done] 28-Jun-2020: Does not wake up if GPSsleep via UART! a) try to disable GPS with cable, then sleep. Solution: Exit checkFix() with return to free Serial1
-// BUG #8 [Done]: GPS ON when Feather goToSleep(!) if DEBUGINO == 0 (!!) Watchdog was waking the MCU.
+// BUG #8 [Done]: Feather ON after goToSleep(!) if DEBUGINO == 0 (!!). Solution: Watchdog was waking the MCU, disable watchdog before sleep.
 // BUG #9: Slow operation with Battery (3xAA eneloop style) vs USB (!)
+// BUG #10: Without GPS totalTXms is resetting. Check 
 
 // Senario #1: GPS   fix and speed 0    > accel sensitive > power down > wait accel for ever.
 // Senario #2: GPS noFix                > accel sensitive > power down > wait accel for ever.
@@ -87,6 +88,27 @@
 // Senario #4: GPS same location        > accel insensitive > scan every three minutes
 // Senario #5: Bike Fall                > send message unconditionally.
 
-// SYSTEM: FEATHER 32u4 Deep Sleep = 0.2mA - 0.3mA, 0.7mA LIS3DH, GPS 1.5mA, RFM95 adds 2ma if not sleeping.
+// Current overview - simple connection
+// Feather 32u4 Deep Sleep = 0.15mA, +0.7mA Adafruit LIS3DH, Adafruit Ultimate GPS +1.5mA, RFM95 +2ma if not sleeping
+// MMA8452 from Sparkfun +20μA (0.020mA)sleeping +36μA (0.036mA) Wake - lowPowerAN function.
+
+// Transistor high-side switch to GPS #1 - collector on LiPo
+// Total of 0.5mA (+0.3mA GPS) Ultimate Feather GPS (collector on LiPo).
+// Transistor high-side switch to GPS #2 - collector on 3V3 of feather.
+// Collector with 3V3 0.15mA, 0.35mA with watchdog.
+
 // Sleep without LoRa Sleeping 4.5mA (PHONEY RFM95 not sleeping)
-// Sleep with all systems down: 2.5mA
+// Sleep with all systems down: 2.5mA. 1.9mA with SparkFun MMA8452 vs Adafruit LIS3DH.
+
+
+// Working: 5.5mA for MCU +0.7mA LED when lit. GPS LED +2mA.
+// Debug via Serial adds 5mA or more?
+
+// TODO: Test MMA8452 on road (seems ok in-house)
+
+// TRANSISTOR testing: GPS Ultimate featherwing *sometimes* wants 36mA, but normally ~25mA. It resets sometimes.
+// 3.89V E without BUZZER, ON or OFF
+// 3.67V E Buzzer Active (22mA). Drop voltage 0.2V
+// 0.80V E Buzzer OFF (!) (0.15mA?)
+// Base: 8.13ma ON, 0.02ma OFF
+// With Ultimate featherwing GPS 3.24V

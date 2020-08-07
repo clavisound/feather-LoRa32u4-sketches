@@ -2,7 +2,7 @@
 // #define EU863 // BUG: TinyLoRa.h ignores this. If not defined default is: US902. Other options: EU863, AU915, AS920
 
 #define SF         7   // SF7 to SF12
-#define DEBUGINO   0   // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
+#define DEBUGINO   1   // 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +2404 bytes of program, +80 bytes of RAM. [default 0]
 #define PHONEY     0   // 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 #define CYCLESF    0   // 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
 #define CHAOS      1   // 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +212 program bytes, +33 bytes RAM; [default 1]
@@ -59,10 +59,8 @@ uint16_t randMS; // used to random sleep
 */
 uint16_t blinks = secondsSleep / 8; // 8 = seconds maximum of watchdog
 
-#if DEBUGINO == 0
-  uint16_t times;
-  uint16_t sleepMS;
-#endif
+uint16_t times;
+uint16_t sleepMS;
 
 // after 24 hours (86.400.000 millis), we can re-send messages if we hit the wall (TTN rule)
 // millis are rollover after 49 days and 17 hours

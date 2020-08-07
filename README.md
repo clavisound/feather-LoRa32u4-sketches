@@ -1,6 +1,6 @@
 # feather-LoRa32u4-sketches
 Here you can find two sketches for [TTNmapper](http://ttnmapper.org). One to use Adafruit Feather LoRa 32u4 with smartphone and one with
-FeatherWing GPS.
+FeatherWing GPS. Extra sketch a bike tracker.
 
 What is supported:
 1. Deep sleep. Map for one month (maybe more) with 350mA battery.
@@ -10,10 +10,11 @@ What is supported:
 5. Respect to TTN limits (30 seconds per day)
 6. Randomness to vary transmissions (to avoid colissions with other static nodes)
 7. Info / DEBUG via LED
+8. Hopefully, more to come!
 
 Debug options:
 1. Debugging via Serial (I hope you will not need this)
-2. PHONEY mode. (for debugging - no transmission. Emulates some transmission time)
+2. PHONEY mode (for debugging - no transmission. Emulates some transmission time)
 3. INDOOR mode (more debugging help)
 
 ## You need in both
@@ -21,7 +22,6 @@ Debug options:
 
 ## Feather LoRa 32u4 + Smartphone
 1. Install libraries: Adafruit SleepyDog, Adafruit TinyLoRa.
- library. (`GPSfix_cfg.h`)
 2. You have to modify `AAfeathers.ino` according to your device / application.
 3. Make integration with TTNmapper.
 4. copy the appropriate decodings to the console.thethingsnetwork.org
@@ -30,8 +30,7 @@ Debug options:
 
 ## Feather LoRa 32u4 + GPS
 1. Install libraries: NeoGPS, Adafruit SleepyDog, Adafruit TinyLoRa.
-2. In sketch with GPS you have to uncomment HDOP / SATELLITES from NeoGPS
- library. (`GPSfix_cfg.h`)
+2. In sketch with GPS you have to uncomment HDOP / SATELLITES from NeoGPS library. (`GPSfix_cfg.h`)
 3. You have to modify `AAfeathers.ino` according to your device / application.
 4. Make integration with TTNmapper.
 5. copy the appropriate decodings to the console.thethingsnetwork.org
@@ -41,12 +40,19 @@ Debug options:
 9. Connect Power and GND.
 10. Connect EN pin from Adafruit GPS to A4 pin (feather 32u4)
 
-## bike-tracker-clv
-You can also find one third sketch: bike-tracker-clv. You will *also* need the library [lis3dh](https://github.com/clavisound/lis3dh-motion-detection/) - thanks to [lbad](https://github.com/ldab/lis3dh-motion-detection) for the initial release and the [LIS3DH accelerometer](https://www.adafruit.com/product/2809) from Adafruit.
+## bike-tracker-clv (Feather LoRa 32u4 + GPS + Accelerometer)
+Here you need extra software *and* hardware. This skecth is mainly tested with MMA8452 (latest testing) but it should work with LIS3DH (early testing).
+
+You can also find one third sketch: bike-tracker-clv. You will *also* need the my custom library [mma8452](https://github.com/clavisound/SparkFun_MMA8452Q_Arduino_Library) *if* you need Low Power (deep sleep) of 0.15mA.
+
+If you don't mind about +.7mA in sleep you can use Adafruit's LIS3DH with LDO and level shifter again with my custom library: [lis3dh](https://github.com/clavisound/lis3dh-motion-detection/) - thanks to [lbad](https://github.com/ldab/lis3dh-motion-detection) for the initial release and the [LIS3DH accelerometer](https://www.adafruit.com/product/2809) from Adafruit.
 
 Extra things supported:
 1. Power Down (wake from accelerometer)
-2. Send location if the traveled distance is more than 50 meters.
+2. Send location if the traveled distance is more than 50 meters, otherwise send only "Heartbeat".
+3. Connect A4 pin to a transistor's base to completely shutdown GPS. (I know about EN pin of GPS but it fails to me for Deep Sleep for unknown reason [+1.5.ma])
 
 ### extra connections
-1. Connect INT1 pin fron LIS3DH to #10 of feather-32u4-LoRa
+1a. Connect INT1 pin from LIS3DH to #10 of feather-32u4-LoRa *OR*
+1b. Connect INT1 pin from SparkFun MMA8452Q to #10 and INT2 to #11 of feather.
+2. Install a PNP transistor. Collector to 3V3 of feather, Base > 330R (don't forget the resistor, or the feather will die!) > A4 pin of Feather and Emitter on GPS 3V3.

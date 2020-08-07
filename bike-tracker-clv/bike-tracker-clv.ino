@@ -6,31 +6,35 @@
 #define SECONDS_SLEEP 180  // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
 // Take care with SF11-SF12! https://lora-alliance.org/sites/default/files/2018-11/Oct122018_NetID_Alloc_Policy_Application_V3.pdf
 // "network providers (such as TTN) are required to actively block devices that always send on SF11 or SF12, to keep their LoRa Alliance NetID."
-#define SF            10   // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
+#define SF            7   // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
 #define POWER         14   // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
-#define FRAMECOUNTER  0    // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
+#define FRAMECOUNTER  511 // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
 
 // FEATHER behaviour
-#define LED       1     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
-#define CHAOS     1     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +392 program bytes, +3 bytes RAM; [default 1]
-#define CYCLESF   0     // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
+#define LED        3     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
+#define CHAOS      0     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +392 program bytes, +3 bytes RAM; [default 1]
+#define CYCLESF    0     // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
+#define STARTDELAY 2     // [default 2] Boot delay seconds.
 
 // DEVICE SELECTION
-#define GPS           0     // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
-#define LISDH         0     // [default 1] 1 for LIS3DH  accelerator, 0 for no.
-#define GPS_SLEEP_PIN 0     // default 0. If `1' connect A4 (feather) to EN pin (Ultimate GPS)
-#define MMA8452       1     // [NOT SUPPORTED - FAILED EFFORT. After abuse it locks. Maybe with I2C it's reliable - also maybe my building enviroment was faulty.]
-                            // 0 to disable code for MMA8452 accelerator, 1 to enable.
+#define GPS           1       // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
+#define MMA8452       1       // [default 1]
+#define LISDH         0       // [default 0] 1 for LIS3DH  accelerator, 0 for no. Adafruit is not suitable for low power. +0.7mA in sleeping. But it's not a bad choice if you don't care about the battery life.
+#define GPS_SLEEP_PIN 0       // default 0. If `1' connect A4 (feather) to EN pin (Ultimate GPS)
+                              // 0 to disable code for MMA8452 accelerator, 1 to enable.
+#define GPS_TRANSISTOR_PIN 1  // [default 0] 1 to enable 'transistor' code. Using 330R resistor (base) with a PNP transistor. Collector connected to feather 3V3.
+                            
 //#define BUZZER      1     // TODO [default 0] 1 to hear some beeps!
 
 // DEBUG options
-#define DEBUGINO  1     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
+#define DEBUGINO  0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
 #define INDOOR    0     // [default 0] For DEBUG INDOORs
-#define PHONEY    1     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define PHONEY    0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define TRISTATE  0     // TODO: Experiment for tristate. More Info: https://forums.adafruit.com/viewtopic.php?p=497713#p497708
 
 // Data Packet to Send to TTN
 #define FRAME_PORT_NO_GPS 3             // Port without GPS data
-#define LORA_HEARTBEAT    5             // Data bytes
+#define LORA_HEARTBEAT    5             // Data bytes (LoRa bytes = 18)
 
 uint32_t secondsSleep = SECONDS_SLEEP;
 
@@ -67,12 +71,13 @@ uint16_t fc = FRAMECOUNTER;
   //uint8_t  oldHeading;  
   uint8_t  hdop;                                      // > 20 = 20 x 5 meters = 100m
   uint8_t  sats;                                      // satellites
-  uint8_t noFixCount;                                 // in cloudy balcony fix after 70 seconds.
+  uint8_t noFixCount;                                 // in cloudy balcony fix after 70 seconds. But another day 500 seconds and counting!
 
   #define FRAME_PORT_GPS 8                            // TTN mapper to 8. 7th port for 5 floats precision.
-  #define LORA_TTNMAPPER 17                           // Data bytes
+  #define LORA_TTNMAPPER 17                           // Data bytes (LoRa bytes: 30)
   uint32_t bootTime;
   uint32_t uptimeGPS;
+  uint32_t GPSnow, GPS_old_time;
   uint32_t lastTXtime = 86400;                        // have to set this, otherwise first TX fails
   uint8_t FramePort = FRAME_PORT_GPS;                 // port with GPS data
   uint8_t loraData[LORA_TTNMAPPER] = {};              // bytes to send
@@ -105,6 +110,7 @@ uint16_t fc = FRAMECOUNTER;
                                              // 64 tap from behind?
                                              // 68 ?
                                              // 32 tap
+ uint8_t intWake;
 
   MMA8452Q accel;                   // create instance of the MMA8452 class
 #endif
@@ -153,7 +159,7 @@ uint16_t fc = FRAMECOUNTER;
 #endif
 
 #if DEBUGINO == 0
-  uint16_t wtimes;	    // watchdog times
+  uint16_t wtimes, times;	    // watchdog times
   bool     overflow;    // TODO wtimes uint16_t MAX 65535 seconds aka 18.2 hours 43200 = 12 hours. Handle that with overflow.
   uint16_t sleepMS;     // normally 8000, maybe we can scrap this.
 #endif
@@ -189,22 +195,36 @@ uint16_t blinks = secondsSleep / 8; // blink every 8 seconds (maximum of watchdo
 uint32_t endTXtime;
 
 void setup(){
-  Watchdog.reset();             // BUG #8 Solution. Without this strange behaviour QST: Why this is needed? // QST #2: why watchdog kicks in only on DEBUGINO == 0?
+
+  // to gain -2mA.
+  setupLora();
+  lora.sleep();
+  
+  Watchdog.reset();             // BUG #8 Solution. Without this strange behaviour.
+                                // QST #1: Why this is needed?
 
   #if DEBUGINO == 1
     Serial.begin(9600);
-    while (! Serial); // don't start unless we have serial connection
+    //while (! Serial); // don't start unless we have serial connection
+  #endif
+
+  #if GPS_TRANSISTOR_PIN == 1             // First thing to do, power up GPS
+  #define PNP_GPS_PIN A4
+   pinMode(PNP_GPS_PIN, OUTPUT);    // Initialize pin LED_BUILTIN as an output
+   digitalWrite(PNP_GPS_PIN, LOW);  // Power on GPS
+   #if DEBUGINO == 1
+     Serial.println("\n PNP on");
+   #endif
   #endif
   
   #if LED > 0
     pinMode(LED_BUILTIN, OUTPUT); // Initialize pin LED_BUILTIN as an output
   #endif
 
-  #define STARTDELAY 2 // seconds
   #if LED == 0
-    delay(STARTDELAY * 1000); // wait (value in ms) before sending 1st message
+    delay(STARTDELAY * 1000);        // wait (value in ms)
   #else
-    blinkLed(STARTDELAY, 250, 1000); // STARTDELAY times for Y duration and Z pause. (example is: 12, 250, 750) aka 12 times, blink for 250 ms puse for 750ms.  
+    ledDEBUG(STARTDELAY, 250, 1000);
   #endif
 
   #if LISDH == 1
@@ -221,7 +241,7 @@ void setup(){
   #if MMA8452 == 1
     enablePinChange();
     setupMMA();
-    //readMMA();
+    readMMA();
   #endif
   
   #if GPS == 1
@@ -229,21 +249,29 @@ void setup(){
     // digitalWrite(GPS_SLEEP_PIN, LOW);
     gpsPort.begin(9600);
 
+    // EVAL for 4800
+    #if TRISTATE == 0 // If trying with tristate, modify there the baudrate.
+    // gps.send_P ( &gpsPort, F("$PMTK251,4800")); 4800 bps
+    // gpsPort.begin(4800); //
+    #endif
+    
     // ATTENTION This setting (PMTK220) is changing the wait times for fix in GPS.ino
     // If you change here the value, you may want to change the value NO_FIX_COUNT
     // in GPS.ino 
     gps.send_P ( &gpsPort, F("PMTK220,1000") );   // update 1time in 10seconds (value in ms) EVAL problem with 3000 and periodic
     //gps.send_P ( &gpsPort, F("PMTK104") );       // Factory reset. Forgets almanac
-    gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GCA
+    gps.send_P ( &gpsPort, F("PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0") ); // RMC and GGA
 
-    Serial1.end();          // close UART, because GPSwake hangs when UART is already open.
-    delay(3000);
-
+    #if TRISTATE == 1
+      Serial1.end();          // close UART, because GPSwake hangs when UART is already open.
+      delay(3000);
+    #endif
+ 
     bootTime = GPStime();  // Don't continue unless we have GPStime!
   #endif
 
-  // started
-  blinkLed(2, 500, 2000);
+  // Booted
+  // ledDEBUG(2, 500, 2000);
 
   // QUESTION: Why I can't use the variable from second .cpp or .ino?
   //  Serial.print("Feather");Serial.println(feather);

@@ -1,5 +1,5 @@
 void transmit(){
-
+  
   #if GPS == 1
     #if INDOOR == 1
       delay(500);          // When debuging with INDOOR, led stays on, wait half second for LED to power off.
@@ -9,13 +9,19 @@ void transmit(){
   
   // EVAL disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
   #if LISDH == 1 | MMA8452 == 1
-     //disablePinChange();
-     //readIRQ();
+//     disablePinChange();
+//     readIRQ();
    #endif
 
    #if GPS == 1
       days = uptimeGPS / DAY;             // calculate days.
    #else
+    #if DEBUGINO == 1
+      uptime = millis();                  // ok with no sleep (millis are not resetting)
+    #endif
+    #if DEBUGINO == 0
+      uptime += millis();                 // valid for sleep EVAL (millis are resetting)
+    #endif
     if ( uptime - endTXtime >= DAY ) {    // we have a new day
       days++;                             // one day more uptime.
       uptime = 0;                         // reset uptime. There is a better solution?
@@ -23,8 +29,14 @@ void transmit(){
    #endif
 
    // We have a new DAY, reset the TX counter
-   if ( days != loraData[2] ) { totalTXms = 0; } // reset TX counter, we have a new day.
-   
+   if ( days != loraData[2] ) {
+    #if DEBUGINO == 1
+      Serial.println("reset totalTXms");
+    #endif
+    totalTXms = 0;
+    } // reset TX counter, we have a new day.
+
+   checkBatt();
    setupLora();
    
    // prepare data for ttn. Lower bits 1-2, are for batC,
@@ -56,7 +68,8 @@ void transmit(){
 
   startTXms = millis(); // count transmission duration. This is start. DONT MOVE
   #if PHONEY == 1
-    delay(500); // emulates SF10 with 30 bytes
+    delay(500);   // emulates SF10 with 30 bytes
+    lora.sleep(); // NOWEB: REMOVE THIS, only for my custom TinyLoRa library.
   #else
     lora.sendData(loraData, loraSize, fc, FramePort);
   #endif
@@ -74,10 +87,6 @@ void transmit(){
   #else
     endTXtime = millis();              // valid for sleep (millis are resetting)
   #endif
-
-  #if LED == 3
-   ledDEBUG(7,30,100);
-  #endif
   
   fc++; // Increase FrameCounter
 
@@ -85,8 +94,8 @@ void transmit(){
   currentTXms = endTXtime - startTXms - 15; // TinyLoRa setup has delays 10 + 5
   totalTXms += currentTXms;                 // Add to the total TX time
 
-  #if LED == 1
-    blinkLed(7, 30, 250); // short fast blinks for notify we send a lora data.
+  #if LED >= 1
+    ledDEBUG(15, 20, 80); // short fast blinks for notify we send a lora data.
   #endif
 
   #if DEBUGINO == 1
