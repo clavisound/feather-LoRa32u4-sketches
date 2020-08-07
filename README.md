@@ -54,5 +54,7 @@ Extra things supported:
 
 ### extra connections
 1a. Connect INT1 pin from LIS3DH to #10 of feather-32u4-LoRa *OR*
+
 1b. Connect INT1 pin from SparkFun MMA8452Q to #10 and INT2 to #11 of feather.
+
 2. Install a PNP transistor. Collector to 3V3 of feather, Base > 330R (don't forget the resistor, or the feather will die!) > A4 pin of Feather and Emitter on GPS 3V3.
