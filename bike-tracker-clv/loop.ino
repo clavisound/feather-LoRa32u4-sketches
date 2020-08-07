@@ -2,36 +2,35 @@
 void loop()
 {
     #if CYCLESF == 0
-     readIRQ();
-     #if DEBUGINO == 1
+      #if DEBUGINO == 1
        Serial.println("\n** Loop");
-     #endif
-     checkTXms();
+      #endif
+    readIRQ(); checkTXms();
     #endif
 
     #if CYCLESF == 1
-      checkFix(); // SF already set in setup.
-      lora.setDatarate(SF9BW125);setLed(3);checkFix();
-      lora.setDatarate(SF8BW125);setLed(2);checkFix();
-      lora.setDatarate(SF10BW125);setLed(4);checkFix();
+      readIRQ(); checkTXms(); // SF already set in setup.
+      lora.setDatarate(SF9BW125);setLed(3);readIRQ(); checkTXms();
+      lora.setDatarate(SF8BW125);setLed(2);readIRQ(); checkTXms();
+      lora.setDatarate(SF10BW125);setLed(4);readIRQ(); checkTXms();
     #endif
 
     #if CYCLESF == 2
-      checkFix(); // SF already set in setup.
-      totalTXms = TXMS + 1; // fake TXms to send only once per day.
+      readIRQ(); checkTXms();    // SF already set in setup.
+      totalTXms = TXMS + 1;      // fake TXms to send only once per day.
     #endif
 
     #if CYCLESF == 3
-      lora.setDatarate(SF7BW125);setLed(1);checkFix();
-      lora.setDatarate(SF8BW125);setLed(2);checkFix();
-      lora.setDatarate(SF9BW125);setLed(3);checkFix();
-      lora.setDatarate(SF10BW125);setLed(4);checkFix();
+      lora.setDatarate(SF7BW125);setLed(1);readIRQ(); checkTXms();
+      lora.setDatarate(SF8BW125);setLed(2);readIRQ(); checkTXms();
+      lora.setDatarate(SF9BW125);setLed(3);readIRQ(); checkTXms();
+      lora.setDatarate(SF10BW125);setLed(4);readIRQ(); checkTXms();
     #endif
 
     #if CYCLESF == 4
-      lora.setDatarate(SF10BW125);setLed(4);checkFix();
-      lora.setDatarate(SF11BW125);setLed(5);checkFix();
-      lora.setDatarate(SF12BW125);setLed(6);checkFix();
+      lora.setDatarate(SF10BW125);setLed(4);readIRQ(); checkTXms();
+      lora.setDatarate(SF11BW125);setLed(5);readIRQ(); checkTXms();
+      lora.setDatarate(SF12BW125);setLed(6);readIRQ(); checkTXms();
     #endif
 }
 #endif
@@ -78,33 +77,32 @@ void loop()
      #if DEBUGINO == 1
        Serial.println("\n** Loop");
      #endif
-     checkFix();
-     checkTXms();
+     readIRQ(); checkTXms();
     #endif
 
     #if CYCLESF == 1
-      checkFix(); // SF already set in setup.
-      lora.setDatarate(SF9BW125);setLed(3);checkFix();
-      lora.setDatarate(SF8BW125);setLed(2);checkFix();
-      lora.setDatarate(SF10BW125);setLed(4);checkFix();
+      readIRQ(); checkTXms(); // SF already set in setup.
+      lora.setDatarate(SF9BW125);setLed(3);readIRQ(); checkTXms();
+      lora.setDatarate(SF8BW125);setLed(2);readIRQ(); checkTXms();
+      lora.setDatarate(SF10BW125);setLed(4);readIRQ(); checkTXms();
     #endif
 
     #if CYCLESF == 2
-      checkFix(); // SF already set in setup.
-      totalTXms = TXMS + 1; // fake TXms to send only once per day.
+      readIRQ(); checkTXms(); // SF already set in setup.
+      totalTXms = TXMS + 1;   // fake TXms to send only once per day.
     #endif
 
     #if CYCLESF == 3
-      lora.setDatarate(SF7BW125);setLed(1);checkFix();
-      lora.setDatarate(SF8BW125);setLed(2);checkFix();
-      lora.setDatarate(SF9BW125);setLed(3);checkFix();
-      lora.setDatarate(SF10BW125);setLed(4);checkFix();
+      lora.setDatarate(SF7BW125);setLed(1);readIRQ(); checkTXms();
+      lora.setDatarate(SF8BW125);setLed(2);readIRQ(); checkTXms();
+      lora.setDatarate(SF9BW125);setLed(3);readIRQ(); checkTXms();
+      lora.setDatarate(SF10BW125);setLed(4);readIRQ(); checkTXms();
     #endif
 
     #if CYCLESF == 4
-      lora.setDatarate(SF10BW125);setLed(4);checkFix();
-      lora.setDatarate(SF11BW125);setLed(5);checkFix();
-      lora.setDatarate(SF12BW125);setLed(6);checkFix();
+      lora.setDatarate(SF10BW125);setLed(4);readIRQ(); checkTXms();
+      lora.setDatarate(SF11BW125);setLed(5);readIRQ(); checkTXms();
+      lora.setDatarate(SF12BW125);setLed(6);readIRQ(); checkTXms();
     #endif
 }
 #endif

@@ -50,7 +50,7 @@ If you don't mind about +.7mA in sleep you can use Adafruit's LIS3DH with LDO an
 Extra things supported:
 1. Power Down (wake from accelerometer)
 2. Send location if the traveled distance is more than 50 meters, otherwise send only "Heartbeat".
-3. Connect A4 pin to a transistor's base to completely shutdown GPS. (I know about EN pin of GPS but it fails to me for Deep Sleep for unknown reason [+1.5.ma])
+3. Connect A4 pin to a transistor's base to completely shutdown GPS. (I know about EN pin of GPS but it [fails to me](https://github.com/clavisound/feather-LoRa32u4-sketches/issues/5) for Deep Sleep for unknown reason [+1.5.ma]. Extra benefit, [no need to think about the LED](https://github.com/clavisound/feather-LoRa32u4-sketches/issues/4)).
 
 ### extra connections
 1a. Connect INT1 pin from LIS3DH to #10 of feather-32u4-LoRa *OR*
