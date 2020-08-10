@@ -47,11 +47,13 @@ void checkTXms (){
       return;
   }
 
+
+// TODO: better make a function checkTXtime().
   #if DEBUGINO == 1 & GPS == 1 & ( LISDH == 1 | MMA8452 == 1)
     
     Serial.println("* TXms");
-    GPStime(); updUptime(); // update (GPS) fix values and update uptimeGPS
-    if ( uptimeGPS - lastTXtime > secondsSleep ) { // we trasmitted long time ago: Transmit!
+    GPStime(); updUptime();                                      // update (GPS) fix values and update uptimeGPS
+    if ( uptimeGPS - lastTXtime > secondsSleep ) {               // we trasmitted long time ago: Transmit!
       if ( fix.dateTime - GPS_old_time > 30 || fix.hdop == 0 ) { // We have old fix OR no-fix, re-gain fix.
         Serial.print("\n!Re-fix, ");
         Serial.print("fix before: ");Serial.println(fix.dateTime - GPS_old_time);

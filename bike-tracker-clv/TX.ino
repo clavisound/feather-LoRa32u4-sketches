@@ -1,11 +1,22 @@
 void transmit(){
+
+  #if DEBUGINO == 1
+    Serial.println("\n* TX");
+  #endif
   
   #if GPS == 1
     #if INDOOR == 1
       delay(500);          // When debuging with INDOOR, led stays on, wait half second for LED to power off.
     #endif
-    GPSsleep();            // Close GPS we are done
+      GPSsleep();            // Close GPS we are done
   #endif
+
+  #if LORA_VERB == 1
+    if ( FramePort == FRAME_PORT_NO_GPS ) { loraData[5] = noFixCount; }
+    else { loraData[17] = noFixCount; }
+  #endif
+  
+  noFixCount = 0;             // reset the counters for gps fixes
   
   // EVAL disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
   #if LISDH == 1 | MMA8452 == 1
@@ -43,13 +54,17 @@ void transmit(){
    // low bits 3-7 are for TX seconds. Spare (last) bit for TODO (button)
    // totalTXms needs 5 bits
    loraData[1] = ((totalTXms / 1000 ) << 2) | vbatC; // Make room for 2 bits. Add the bits 1+2 (aka: OR vbatC)
-   loraData[2] = days;                               // max 255 days.
-   loraData[3] = txPower;                            // TODO -1 to 20dBm, not -80 to 20
+   //loraData[2] = days;                               // Days: max 255 days. TODO: better weeks with 63 max (6bits).
+   loraData[3] = txPower;                            // TODO: 5bits -1 to 20dBm, not -80 to 20
    
    #if GPS == 1
-     loraData[4] = ( uptimeGPS % DAY ) / 3600;       // convert seconds to hours [TODO: 24hours = 5bits (see blinkLed)]
+     //#if LORA_VERB == 1
+       loraData[4] = ( uptimeGPS % DAY ) / 3600;       // convert seconds to hours [TODO: 24hours = 5bits (see blinkLed)]
+     //#endif
    #else
-     loraData[4] = uptime / 1000 / 60 / 60;          // convert ms to hours [TODO: 24hours = 5bits (see blinkLed)]
+     //#if LORA_VERB == 1
+       loraData[4] = uptime / 1000 / 60 / 60;          // convert ms to hours [TODO: 24hours = 5bits (see blinkLed)]
+     //#endif
    #endif
    
    // loraData of GPS data are in GPS tab.
@@ -109,6 +124,7 @@ void transmit(){
         Serial.print(loraData[counter], HEX);Serial.print(F(" "));
       }
     Serial.println();
+    Serial.print("P: ");Serial.println(FramePort);
       
     printDebug();
   #endif

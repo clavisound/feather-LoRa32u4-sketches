@@ -18,8 +18,16 @@ void printDebug(){
        Serial.print(F("Transmit before (s): "));Serial.print( uptimeGPS - lastTXtime );
        Serial.print(F(", uptimeGPS: "));Serial.print(uptimeGPS);
        Serial.print(F(", lastTXtime: "));Serial.println(lastTXtime);
+
+       Serial.print(F("\nFixCount: "));
+       if ( FramePort == FRAME_PORT_NO_GPS ) { 
+         Serial.print(loraData[5]);
+        } else {
+         Serial.print(loraData[17]);
+        }
+      
        //Serial.print(F("GPSnow   : "));Serial.println(GPSnow);
-       Serial.print(F("speed: "));Serial.println(speed);
+       Serial.print(F("\nspeed: "));Serial.println(speed);
      #endif
    #endif
 }

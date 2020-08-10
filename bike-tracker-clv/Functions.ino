@@ -12,8 +12,8 @@ void blinkLed(uint16_t times, uint16_t duration, uint8_t pause){ // x, ms, secon
       delay(duration);
       digitalWrite(LED_BUILTIN, LOW);
       Serial.print(F("led "));
+      delay(pause * 1000);
     #else
-      // BUG: it HUNGS after second run.
       uptime += Watchdog.sleep(duration);               // Sleep for up to 8 seconds (8000ms, 4000, 2000, 1000, 500, 250, 120, 60, 30, 15ms)
       digitalWrite(LED_BUILTIN, LOW);
       uptime += Watchdog.sleep(pause * 1000);           // Sleep for up to 8 seconds (8000ms, 4000, 2000, 1000, 500, 250, 120, 60, 30, 15ms)

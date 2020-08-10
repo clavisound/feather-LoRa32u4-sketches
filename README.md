@@ -58,3 +58,5 @@ Extra things supported:
 1b. Connect INT1 pin from SparkFun MMA8452Q to #10 and INT2 to #11 of feather.
 
 2. Install a PNP transistor. Collector to 3V3 of feather, Base > 330R (don't forget the resistor, or the feather will die!) > A4 pin of Feather and Emitter on GPS 3V3.
+
+3. Connect 3.3V (Feather 3V3) to BAT pin of GPS to have RTC. *this is important*to have RTC. _Otherwise sketch will be unpredictable_.

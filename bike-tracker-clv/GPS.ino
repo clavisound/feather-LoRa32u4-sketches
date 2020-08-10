@@ -16,21 +16,22 @@
 void checkFix() {
 
   GPSwake();
-  gps.send_P ( &gpsPort, F("PMTK225,0") );  // disable periodic.
+  gps.send_P ( &gpsPort, F("PMTK225,0") );         // disable periodic.
   
   while ( 1 ) {                                    // run forever (until return)
     while (gps.available( Serial1 )) {             // Read only one character, so you have to call it FAST.
 
       fix = gps.read();
 
-      if ( fix.satellites < 3 && fix.hdop > HDOP_LIMIT ) {
-        blinkLed(1,15,16);
+      if ( fix.satellites < 3 && ( fix.hdop > HDOP_LIMIT || fix.hdop == 0 ) ) {
+        blinkLed(1,15,16);                                 // close MCU to save energy
         // sleepForSeconds(16,8);
-        // EVAL: return;?
+          noFixCount += 15;
         } 
-      if ( fix.satellites == 3 && fix.hdop > HDOP_LIMIT ) {
-        blinkLed(1,15,3);
+      if ( fix.satellites == 3 && ( fix.hdop > HDOP_LIMIT || fix.hdop == 0 ) ) {
+        blinkLed(1,15,3);                                 // close MCU to save energy
         // sleepForSeconds(3,1);
+          noFixCount += 2;
         }
 
       if ( fix.hdop < HDOP_LIMIT && fix.hdop > 0 ) {    // MAX I have seen 8720 aka 8.7 DOP (NeoGPS multiplies * 1000)
@@ -107,7 +108,8 @@ void checkFix() {
             updUptime();
             FramePort = FRAME_PORT_NO_GPS;
             loraSize = LORA_HEARTBEAT;
-
+            transmit();                        // Small BUG: normally we should call checkTXms to check for new day or TTN limits.
+            
             return;
         }
       } // no fix
@@ -308,8 +310,8 @@ void prepareGPSLoRaData(){
   #if DEBUGINO == 1
     Serial.println("* prepareGPSLoRa");
   #endif
+          
           FramePort = FRAME_PORT_GPS; // We have GPS data, choose decoder with GPS.
-          noFixCount = 0;             // reset the counters for gps fixes
           loraSize = LORA_TTNMAPPER;
 
           // https://github.com/ricaun/esp32-ttnmapper-gps/blob/8d37aa60e96707303ae07ca30366d2982e15b286/esp32-ttnmapper-gps/lmic_Payload.ino#L21
@@ -341,7 +343,7 @@ void prepareGPSLoRaData(){
             loraData[14] = fix.alt.whole >> 8;     // MSB altitude 16bits
             loraData[15] = fix.alt.whole;          // TODO, we don't need those two bytes if we have < 255 metres.
           }                                        // ^^ divide by 3 so in 8bits we have max alt of 765m
-          loraData[12] = fix.satellites;           // TODO: count bits, or maybe + 1 / divide with 2. Aka for 4 bits (max 16 sats)
+          loraData[12] = fix.satellites;           // TODO: min sats are 3. 0001 = 3 0010 = 4 e.t.c. [we need 4 bits for 16 sats]
           loraData[13] = speed;                    // TODO: divide by 3 to have max speed of 90 with 5 bits
           loraData[16] = fix.heading_cd() / 200;   // NeoGPS multiplies by 100. We divide by two to fit in one byte
 						   // TODO: divide by 6 to fit in 6bits
@@ -389,14 +391,18 @@ uint32_t GPStime() {
       fix = gps.read();
 
       if ( fix.valid.location ) {               // ... unless we have location. Then we have time.
+        
+        noFixCount++;
         return fix.dateTime;
+        
       } else if ( fix.dateTime < 2432123456 ) {  // ... unless date is before 2080. THIS IS HACK. Problem for 2080 and onwards! Device / library specific.
             
             #if DEBUGINO == 1
               Serial.print("time: "); Serial.println(fix.dateTime);
               Serial.print("millis (s): "); Serial.println(millis() / 1000);
             #endif
-            
+        
+        noFixCount++;
         return fix.dateTime;
         
         #if INDOOR == 1
@@ -406,7 +412,8 @@ uint32_t GPStime() {
               Serial.print("time: "); Serial.println(fix.dateTime);
               Serial.print("millis (s): "); Serial.println(millis() / 1000);
             #endif
-            
+          
+          noFixCount++; 
           return fix.dateTime;
         #endif     
       }

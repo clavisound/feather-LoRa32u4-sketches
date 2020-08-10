@@ -27,14 +27,20 @@
 //#define BUZZER      1     // TODO [default 0] 1 to hear some beeps!
 
 // DEBUG options
-#define DEBUGINO  0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
-#define INDOOR    0     // [default 0] For DEBUG INDOORs
-#define PHONEY    0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
-#define TRISTATE  0     // TODO: Experiment for tristate. More Info: https://forums.adafruit.com/viewtopic.php?p=497713#p497708
+#define DEBUGINO  1     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
+#define INDOOR    1     // [default 0] For DEBUG INDOORs
+#define PHONEY    1     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define LORA_VERB 1     // [default 0] 1 to send verbose (DEBUG) messages via LoRa.
+#define TRISTATE  0     // Ignore. Failed experiment for tristate. More Info: https://forums.adafruit.com/viewtopic.php?p=497713#p497708
 
 // Data Packet to Send to TTN
-#define FRAME_PORT_NO_GPS 3             // Port without GPS data
-#define LORA_HEARTBEAT    5             // Data bytes (LoRa bytes = 18)
+#if LORA_VERB == 1
+  #define FRAME_PORT_NO_GPS 11            // Verbose Port without GPS data
+  #define LORA_HEARTBEAT    6             // Data bytes (LoRa bytes = 1?)
+#else
+  #define FRAME_PORT_NO_GPS 1             // Port without GPS data
+  #define LORA_HEARTBEAT    5             // Data bytes (LoRa bytes = 18)
+#endif
 
 uint32_t secondsSleep = SECONDS_SLEEP;
 
@@ -73,8 +79,14 @@ uint16_t fc = FRAMECOUNTER;
   uint8_t  sats;                                      // satellites
   uint8_t noFixCount;                                 // in cloudy balcony fix after 70 seconds. But another day 500 seconds and counting!
 
+#if LORA_VERB == 1
+  #define FRAME_PORT_GPS 18                           // 
+  #define LORA_TTNMAPPER 18                           // Data bytes (LoRa bytes: 3?)
+
+#else
   #define FRAME_PORT_GPS 8                            // TTN mapper to 8. 7th port for 5 floats precision.
   #define LORA_TTNMAPPER 17                           // Data bytes (LoRa bytes: 30)
+#endif
   uint32_t bootTime;
   uint32_t uptimeGPS;
   uint32_t GPSnow, GPS_old_time;

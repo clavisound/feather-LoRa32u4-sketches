@@ -27,7 +27,7 @@
 // EEPROM https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram Wear after ?? writes
 // ACCEL       - Byte [DONE] + code [semiDONE]
 // Button      - Code [DONE] + resistor [DONE with internal pull-up] (interrupt code)
-// Buzzer      - Choose resistor (25ma max. EVAL 330Ohm)
+// Buzzer      - Choose resistor (25ma max. EVAL 330R)
 // GPS         - DONE
 // Reed switch - Test with magnet [pre-testing]
 // BLE         - Installation + code
@@ -35,7 +35,7 @@
 // ChangeLog
 // [solved] SYSTEM BUG #1 (EPIC): after one day the days are ++ every TX. Hours where ok. Watchdog was resetting the millis.
 
-// notes
+// notes -- IGNORE FROM NOW ON, THIS IS MY NOTEPAD --
 // GPS [Done] 22-apr-2020: first boot of Adafruit featherwing 0,2080-01-06 00:01:21.790,,,0,0,,0,327,0,12477,
 // GPS [Done] 23-apr-2020: Polling GPS with NeoGPS
 // GPS [Done] 24-apr-2020: TTNmapper payload, 23-apr-2020
@@ -43,7 +43,7 @@
 // GPS [Done]: get best fix? (with HDOP) - I think no, better with heading, 23-apr-2020.
 // GPS TODO: If heading changes send message, 23-apr-2020
 // GPS TODO [Discard]: After stop send only once and restart with km/h >= 3, 23-apr-2020
-// GPS TODO: When sleep if LED, is on, it stays on 23-apr-2020.
+// GPS TODO: When sleep if LED, is on, it stays on 23-apr-2020. [semi-solved with high-side transistor]
 // GPS TODO: Compare 24bits loc with 16bits, 23-apr-2020
 // GPS TODO: bike payload, 23-apr-2020
 // GPS [Done] 29-May-2020: distance? 23-apr-2020
@@ -90,23 +90,36 @@
 
 // Current overview - simple connection
 // Feather 32u4 Deep Sleep = 0.15mA, +0.7mA Adafruit LIS3DH, Adafruit Ultimate GPS +1.5mA, RFM95 +2ma if not sleeping
-// MMA8452 from Sparkfun +20μA (0.020mA)sleeping +36μA (0.036mA) Wake - lowPowerAN function.
+// MMA8452 from Sparkfun +20μA (0.020mA) sleeping +36μA (0.036mA) Wake - lowPowerAN function.
 
 // Transistor high-side switch to GPS #1 - collector on LiPo
 // Total of 0.5mA (+0.3mA GPS) Ultimate Feather GPS (collector on LiPo).
 // Transistor high-side switch to GPS #2 - collector on 3V3 of feather.
-// Collector with 3V3 0.15mA, 0.35mA with watchdog.
+// Collector with 3V3 0.15mA (0.16mA with fully charged battery NiMH LSD), 0.35mA with watchdog.
 
 // Sleep without LoRa Sleeping 4.5mA (PHONEY RFM95 not sleeping)
 // Sleep with all systems down: 2.5mA. 1.9mA with SparkFun MMA8452 vs Adafruit LIS3DH.
-
 
 // Working: 5.5mA for MCU +0.7mA LED when lit. GPS LED +2mA.
 // Debug via Serial adds 5mA or more?
 
 // TODO: Test MMA8452 on road (seems ok in-house)
+// TODO: Test current with GPS antenna
+// TODO: Test GPS antenna in bike
+// TODO: Test LoRa antenna in bike
 
 // TRANSISTOR testing: GPS Ultimate featherwing *sometimes* wants 36mA, but normally ~25mA. It resets sometimes.
+// Measurements with feather
+// 330R base 8.35mA (Emitter 41mA (10R) - 38mA (47R on emitter)) - Some times GPS resets because it seems it wants way more than 25mA.
+// 270R base 9.60mA (Emitter 49mA (10R on emitter) - 53mA with 0R on emitter )
+// 220R base 11.5mA (Emitter 50mA (10R on emitter))
+
+// GPS Featherwing Ultimate when seeking fix: 30-35mA.
+
+// 120mAh LiPo measurements
+// When 3.6V when operating 3.52V
+
+// Transistor measurements with Battery
 // 3.89V E without BUZZER, ON or OFF
 // 3.67V E Buzzer Active (22mA). Drop voltage 0.2V
 // 0.80V E Buzzer OFF (!) (0.15mA?)

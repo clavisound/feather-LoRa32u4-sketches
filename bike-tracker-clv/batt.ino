@@ -1,4 +1,5 @@
 void checkBatt(){
+
     vbat = analogRead(VBATPIN) - 450; // convert to 8bit
     /*
     vbat *= 2;    // we divided by 2, so multiply back
@@ -27,5 +28,8 @@ void checkBatt(){
       Serial.print(F("* VBat (8bit): ")); Serial.print(vbat);Serial.print(F(", VBatB (volt): ")); Serial.print((vbat + 450) * 0.0064453125);
       Serial.print(F(", VBatC (range): ")); Serial.println(vbatC);
     #endif
-    loraData[0] = vbat; // loraData[0] = highByte(vbat);loraData[1] = lowByte(vbat);
+
+    //#if LORA_VERB == 1
+      loraData[0] = vbat; // loraData[0] = highByte(vbat);loraData[1] = lowByte(vbat);
+    //#endif
 }
