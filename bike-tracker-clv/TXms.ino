@@ -80,8 +80,6 @@ void checkTXms (){
       gps.send_P ( &gpsPort, F("PMTK225,2,40000,500000,0,0") );         // Periodic 10secs fix, 50 sleep, Turtle track: https://forums.adafruit.com/viewtopic.php?t=54272
       //gps.send_P ( &gpsPort, F("PMTK225,8") );                         // Always Locate Stand-by. 1.5mA after fix.
       //gps.send_P ( &gpsPort, F("PMTK225,9") );                           // Always Locate Back-up. Same as standby?
-      //gps.send_P ( &gpsPort, F("PMTK161,1") );                        //  stand-by
-      //gps.send_P ( &gpsPort, F("PMTK161,") );                        //  Sleep
       printDebug();
       Serial.println(F("\nToo SOON! wake in: "));Serial.println(secondsSleep - ( uptimeGPS - lastTXtime ) );
       delay( ( secondsSleep - ( uptimeGPS - lastTXtime ) ) * 1000 );    // Calculate difference from last transmission

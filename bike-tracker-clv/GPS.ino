@@ -10,7 +10,7 @@
 #if INDOOR == 1
   #define NO_FIX_COUNT 8                   // debug indoors with '8' led stays on with GPSsleep();
 #else
-  #define NO_FIX_COUNT 254                 // over 2 minutes. Some days 500 seconds are not enough!
+  #define NO_FIX_COUNT 245                 // over 2 minutes. Some days 500 seconds are not enough!
 #endif
 
 void checkFix() {
@@ -389,7 +389,8 @@ uint32_t GPStime() {
   while (1) {                                 // try forever...
     while (gps.available( Serial1 )) {        // Read only one character, so you have to call it FAST.
       fix = gps.read();
-
+      noFixCount++;
+      
       if ( fix.valid.location ) {               // ... unless we have location. Then we have time.
         
         noFixCount++;
@@ -401,8 +402,7 @@ uint32_t GPStime() {
               Serial.print("time: "); Serial.println(fix.dateTime);
               Serial.print("millis (s): "); Serial.println(millis() / 1000);
             #endif
-        
-        noFixCount++;
+
         return fix.dateTime;
         
         #if INDOOR == 1
@@ -412,8 +412,7 @@ uint32_t GPStime() {
               Serial.print("time: "); Serial.println(fix.dateTime);
               Serial.print("millis (s): "); Serial.println(millis() / 1000);
             #endif
-          
-          noFixCount++; 
+
           return fix.dateTime;
         #endif     
       }

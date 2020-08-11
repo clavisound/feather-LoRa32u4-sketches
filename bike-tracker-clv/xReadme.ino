@@ -117,7 +117,7 @@
 // GPS Featherwing Ultimate when seeking fix: 30-35mA.
 
 // 120mAh LiPo measurements
-// When 3.6V when operating 3.52V
+// When 3.6V operating 3.52V
 
 // Transistor measurements with Battery
 // 3.89V E without BUZZER, ON or OFF

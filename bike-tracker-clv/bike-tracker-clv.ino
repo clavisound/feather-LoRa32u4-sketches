@@ -3,40 +3,41 @@
 
 // LoRa and LoRaWAN options
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
-#define SECONDS_SLEEP 180  // Send every secs / mins: 7200''/ 120', 4200''/ 90', 3600''/ 60', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
+#define SECONDS_SLEEP 180  // Send every secs / mins: MAX 65535''/18hours, 7200''/ 2hours', 4200''/ 90', 3600''/ 1hour', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
 // Take care with SF11-SF12! https://lora-alliance.org/sites/default/files/2018-11/Oct122018_NetID_Alloc_Policy_Application_V3.pdf
 // "network providers (such as TTN) are required to actively block devices that always send on SF11 or SF12, to keep their LoRa Alliance NetID."
-#define SF            7   // [default 7] SF7 to SF12. Use 12 only for testing, if you are away from gateway and stationery
-#define POWER         14   // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
-#define FRAMECOUNTER  511 // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
+#define SF            7           // [default 10] SF7BW125 to SF10BW125. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
+#define SFB           8           // [default 9] 7 to 10. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
+#define POWER         14          // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
+#define FRAMECOUNTER  711         // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
+#define TWOSF         1           // UNTESTED [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
 
 // FEATHER behaviour
 #define LED        3     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
-#define CHAOS      0     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +392 program bytes, +3 bytes RAM; [default 1]
+#define CHAOS      0     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +356 program bytes, +3 bytes RAM; [default 1]
 #define CYCLESF    0     // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
 #define STARTDELAY 2     // [default 2] Boot delay seconds.
 
 // DEVICE SELECTION
 #define GPS           1       // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
-#define MMA8452       1       // [default 1]
-#define LISDH         0       // [default 0] 1 for LIS3DH  accelerator, 0 for no. Adafruit is not suitable for low power. +0.7mA in sleeping. But it's not a bad choice if you don't care about the battery life.
+#define MMA8452       1       // [default 1] 0 to disable code for MMA8452 accelerator, 1 to enable.
+#define LISDH         0       // [default 0] 1 for LIS3DH  accelerator, 0 for no. Adafruit is not suitable for low power unless you de-solder some stuff. +0.7mA in sleeping. But it's not a bad choice if you don't care about the battery life.
 #define GPS_SLEEP_PIN 0       // default 0. If `1' connect A4 (feather) to EN pin (Ultimate GPS)
-                              // 0 to disable code for MMA8452 accelerator, 1 to enable.
 #define GPS_TRANSISTOR_PIN 1  // [default 0] 1 to enable 'transistor' code. Using 330R resistor (base) with a PNP transistor. Collector connected to feather 3V3.
                             
 //#define BUZZER      1     // TODO [default 0] 1 to hear some beeps!
 
 // DEBUG options
-#define DEBUGINO  1     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
-#define INDOOR    1     // [default 0] For DEBUG INDOORs
-#define PHONEY    1     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define DEBUGINO  0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
+#define INDOOR    0     // [default 0] For DEBUG INDOORs
+#define PHONEY    0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 #define LORA_VERB 1     // [default 0] 1 to send verbose (DEBUG) messages via LoRa.
 #define TRISTATE  0     // Ignore. Failed experiment for tristate. More Info: https://forums.adafruit.com/viewtopic.php?p=497713#p497708
 
 // Data Packet to Send to TTN
 #if LORA_VERB == 1
   #define FRAME_PORT_NO_GPS 11            // Verbose Port without GPS data
-  #define LORA_HEARTBEAT    6             // Data bytes (LoRa bytes = 1?)
+  #define LORA_HEARTBEAT    7             // Data bytes (LoRa bytes = 20)
 #else
   #define FRAME_PORT_NO_GPS 1             // Port without GPS data
   #define LORA_HEARTBEAT    5             // Data bytes (LoRa bytes = 18)
@@ -52,7 +53,7 @@ uint16_t fc = FRAMECOUNTER;
 #include <Adafruit_SleepyDog.h>
 
 #if GPS == 1
-  #define DAY  86400    // = day in seconds. Use to comply with TTN policy [DEBUG: 7200 for 2 hours]
+  #define DAY  86400     // = day in seconds. Use to comply with TTN policy [DEBUG: 7200 for 2 hours]
 #else
   #define DAY  86400000  // = day in ms. (you are using millis instead of GPS time)
 #endif
@@ -73,16 +74,16 @@ uint16_t fc = FRAMECOUNTER;
   uint16_t altitude;        // 16 bits. Everest is >8.000meters
   uint8_t  speed;       
   //uint8_t  oldSpeed;     
-  uint8_t  heading;     
+  uint8_t heading;     
   //uint8_t  oldHeading;  
   uint8_t  hdop;                                      // > 20 = 20 x 5 meters = 100m
   uint8_t  sats;                                      // satellites
-  uint8_t noFixCount;                                 // in cloudy balcony fix after 70 seconds. But another day 500 seconds and counting!
+  uint8_t  noFixCount;                                // in cloudy balcony fix after 70 seconds. But another day 500 seconds and counting!
 
 #if LORA_VERB == 1
   #define FRAME_PORT_GPS 18                           // 
-  #define LORA_TTNMAPPER 18                           // Data bytes (LoRa bytes: 3?)
-
+  #define LORA_TTNMAPPER 19                           // Data bytes (LoRa bytes: 31)
+  uint16_t fixes;
 #else
   #define FRAME_PORT_GPS 8                            // TTN mapper to 8. 7th port for 5 floats precision.
   #define LORA_TTNMAPPER 17                           // Data bytes (LoRa bytes: 30)
@@ -116,7 +117,7 @@ uint16_t fc = FRAMECOUNTER;
   #define MSKTRS   0x20             //Transient
 
   uint8_t evntMMA;                           // event type
-  volatile uint8_t interruptEvent = 0;    // 0 for no interruptEvent
+  volatile uint8_t interruptEvent = 0;       // 0 for no interruptEvent
   uint8_t orientation;                       // 0 (right fall), 1 (left fall), 2 (normal), 3 (upside down), 64 (endo or whellie)
   uint8_t tap;                               // 16 tap on X, 24 double? tap X, 17 tap Y, 25 double? tap Y,
                                              // 64 tap from behind?
@@ -142,11 +143,11 @@ uint16_t fc = FRAMECOUNTER;
 
   uint16_t errorsAndWarnings = 0;
 
-  uint8_t evntLis;                  // event type
-  uint8_t evntBuf;                  // event buffer
+  uint8_t evntLis;                           // event type
+  uint8_t evntBuf;                           // event buffer
   volatile uint8_t interruptEvent = 0;       // 0 for no interruptEvent
 
-  LIS3DH lis(0x18);                 //Default address for adafruit is 0x18.
+  LIS3DH lis(0x18);                          //Default address for adafruit is 0x18.
 
 // MASKS
 

@@ -12,8 +12,15 @@ void transmit(){
   #endif
 
   #if LORA_VERB == 1
-    if ( FramePort == FRAME_PORT_NO_GPS ) { loraData[5] = noFixCount; }
-    else { loraData[17] = noFixCount; }
+    fixes += noFixCount / 4;
+    if ( FramePort == FRAME_PORT_NO_GPS ) {
+      loraData[5] = fixes >> 8;
+      loraData[6] = fixes;
+      }
+    else {
+      loraData[17] = fixes >> 8;
+      loraData[18] = fixes;
+      }
   #endif
   
   noFixCount = 0;             // reset the counters for gps fixes
@@ -84,7 +91,7 @@ void transmit(){
   startTXms = millis(); // count transmission duration. This is start. DONT MOVE
   #if PHONEY == 1
     delay(500);   // emulates SF10 with 30 bytes
-    lora.sleep(); // NOWEB: REMOVE THIS, only for my custom TinyLoRa library.
+
   #else
     lora.sendData(loraData, loraSize, fc, FramePort);
   #endif

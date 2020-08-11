@@ -24,24 +24,65 @@ void setupLora()
    *  SF12 every 64   minutes or  22 messages per day. 
    */
 
-  #if SF == 12
-    lora.setDatarate(SF12BW125);
-  #elif SF == 11
-   lora.setDatarate(SF11BW125);
-  #elif SF == 10
-   lora.setDatarate(SF10BW125);
-  #elif SF == 9
-   lora.setDatarate(SF9BW125);
-  #elif SF == 8
-   lora.setDatarate(SF8BW125);
-  #else
-    lora.setDatarate(SF7BW125);
-  #endif
+   #if TWOSF == 1
+     // #if GPS == 1
+       if ( totalTXms & 0x01 ) { // if we have odd second select SFB
+        #if DEBUGINO == 1
+          Serial.print("\n* SFB: ");Serial.println(totalTXms);
+        #endif
+        #if SFB == 12
+          lora.setDatarate(SF12BW125);
+        #elif SFB == 11
+          lora.setDatarate(SF11BW125);
+        #elif SFB == 10
+          lora.setDatarate(SF10BW125);
+        #elif SFB == 9
+          lora.setDatarate(SF9BW125);
+        #elif SFB == 8
+          lora.setDatarate(SF8BW125);
+        #else
+          lora.setDatarate(SF7BW125);
+        #endif // SFB
+        } else { // we have even second, select SF
+          #if DEBUGINO == 1
+            Serial.println("\n* SF(a)\n");
+          #endif
+        #if SF == 12
+          lora.setDatarate(SF12BW125);
+        #elif SF == 11
+          lora.setDatarate(SF11BW125);
+        #elif SF == 10
+          lora.setDatarate(SF10BW125);
+        #elif SF == 9
+          lora.setDatarate(SF9BW125);
+        #elif SF == 8
+          lora.setDatarate(SF8BW125);
+        #else
+          lora.setDatarate(SF7BW125);
+        #endif // SF
+       }
+     // #endif // GPS
+     #else // MULTISF != 1
+      #if SF == 12
+        lora.setDatarate(SF12BW125);
+      #elif SF == 11
+        lora.setDatarate(SF11BW125);
+      #elif SF == 10
+        lora.setDatarate(SF10BW125);
+      #elif SF == 9
+        lora.setDatarate(SF9BW125);
+      #elif SF == 8
+        lora.setDatarate(SF8BW125);
+      #else
+        lora.setDatarate(SF7BW125);
+      #endif // SF
+      
+   #endif // MUTLTISF
   
   if(!lora.begin())
   {
     #if DEBUGINO == 1
-      Serial.println(F("Failed, Check your radio"));
+      Serial.println(F("LoRa Failed"));
     #endif
     while(true);
   }
