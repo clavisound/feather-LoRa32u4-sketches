@@ -23,12 +23,12 @@ void checkFix() {
 
       fix = gps.read();
 
-      if ( fix.satellites < 3 && ( fix.hdop > HDOP_LIMIT || fix.hdop == 0 ) ) {
+      if ( fix.satellites < 3 && fix.hdop == 0 ) {
         blinkLed(1,15,16);                                 // close MCU to save energy
         // sleepForSeconds(16,8);
           noFixCount += 15;
         } 
-      if ( fix.satellites == 3 && ( fix.hdop > HDOP_LIMIT || fix.hdop == 0 ) ) {
+      if ( fix.satellites >= 3 && fix.hdop == 0 ) {
         blinkLed(1,15,3);                                 // close MCU to save energy
         // sleepForSeconds(3,1);
           noFixCount += 2;
@@ -83,6 +83,9 @@ void checkFix() {
 
           updUptime();
           prepareGPSLoRaData();
+
+          checkPin(); // EVAL
+          transmit(); // EVAL (otherwise we have loop and here again)
           return;
 
         } else if ( noFixCount <= NO_FIX_COUNT ) {           // Continue for number of failures (on update 1Hz every second)
@@ -108,6 +111,8 @@ void checkFix() {
             updUptime();
             FramePort = FRAME_PORT_NO_GPS;
             loraSize = LORA_HEARTBEAT;
+
+            checkPin();
             transmit();                        // Small BUG: normally we should call checkTXms to check for new day or TTN limits.
             
             return;

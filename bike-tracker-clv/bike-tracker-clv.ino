@@ -9,12 +9,12 @@
 #define SF            7           // [default 10] SF7BW125 to SF10BW125. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
 #define SFB           8           // [default 9] 7 to 10. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
 #define POWER         14          // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
-#define FRAMECOUNTER  711         // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
+#define FRAMECOUNTER  800         // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
 #define TWOSF         1           // UNTESTED [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
 
 // FEATHER behaviour
 #define LED        3     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
-#define CHAOS      0     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +356 program bytes, +3 bytes RAM; [default 1]
+#define CHAOS      1     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +356 program bytes, +3 bytes RAM; [default 1]
 #define CYCLESF    0     // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
 #define STARTDELAY 2     // [default 2] Boot delay seconds.
 
