@@ -12,7 +12,7 @@ void transmit(){
   #endif
 
   #if LORA_VERB == 1
-    fixes += noFixCount / 4;
+    fixes += noFixCount / 5;
     if ( FramePort == FRAME_PORT_NO_GPS ) {
       loraData[5] = fixes >> 8;
       loraData[6] = fixes;

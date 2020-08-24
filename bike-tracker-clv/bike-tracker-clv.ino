@@ -8,9 +8,9 @@
 // "network providers (such as TTN) are required to actively block devices that always send on SF11 or SF12, to keep their LoRa Alliance NetID."
 #define SF            7           // [default 10] SF7BW125 to SF10BW125. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
 #define SFB           8           // [default 9] 7 to 10. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
-#define POWER         14          // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
+#define POWER         3           // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
 #define FRAMECOUNTER  800         // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
-#define TWOSF         1           // UNTESTED [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
+#define TWOSF         1           // [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
 
 // FEATHER behaviour
 #define LED        3     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]

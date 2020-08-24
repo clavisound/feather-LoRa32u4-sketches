@@ -16,7 +16,7 @@
 void checkFix() {
 
   GPSwake();
-  gps.send_P ( &gpsPort, F("PMTK225,0") );         // disable periodic.
+  gps.send_P ( &gpsPort, F("PMTK225,0") );         // disable periodic. (just in-case)
   
   while ( 1 ) {                                    // run forever (until return)
     while (gps.available( Serial1 )) {             // Read only one character, so you have to call it FAST.
@@ -68,8 +68,8 @@ void checkFix() {
         Serial.print(F("Seeking FIX, UP secs: ")); Serial.println(uptime / 1000);
       #endif
 
+        // Send High HDOP fix.
         // we have many efforts and bad quality HDOP. Don't waste energy with GPS seeking.
-        // Send the message with LOW HDOP
         if ( ++noFixCount >= NO_FIX_COUNT / 2 && fix.hdop >= HDOP_LIMIT ) {
            
           #if DEBUGINO == 1
@@ -84,8 +84,8 @@ void checkFix() {
           updUptime();
           prepareGPSLoRaData();
 
-          checkPin(); // EVAL
-          transmit(); // EVAL (otherwise we have loop and here again)
+          checkPin();
+          transmit();
           return;
 
         } else if ( noFixCount <= NO_FIX_COUNT ) {           // Continue for number of failures (on update 1Hz every second)
@@ -349,11 +349,11 @@ void prepareGPSLoRaData(){
             loraData[15] = fix.alt.whole;          // TODO, we don't need those two bytes if we have < 255 metres.
           }                                        // ^^ divide by 3 so in 8bits we have max alt of 765m
           loraData[12] = fix.satellites;           // TODO: min sats are 3. 0001 = 3 0010 = 4 e.t.c. [we need 4 bits for 16 sats]
-          loraData[13] = speed;                    // TODO: divide by 3 to have max speed of 90 with 5 bits
+          loraData[13] = speed;                    // TODO: divide by 3 to have max speed of 90 with 5 bits. 2nd options 4bits speed (1-32) [divided by 4]
           loraData[16] = fix.heading_cd() / 200;   // NeoGPS multiplies by 100. We divide by two to fit in one byte
 						   // TODO: divide by 6 to fit in 6bits
 
-          oldLat = fix.latitude() * 10E5;          // store lat / lon to compare with next fix.
+          oldLat = fix.latitude()  * 10E5;         // store lat / lon to compare with next fix.
           oldLon = fix.longitude() * 10E5;
 
           #if DEBUGINO == 1
@@ -365,7 +365,7 @@ void prepareGPSLoRaData(){
 
 uint8_t checkDistance(){
     GPS_old_time = fix.dateTime;
-    // return 1; // Uncomment for DEBUG (send whatever the distance is...)
+    return 1; // Uncomment for DEBUG (send whatever the distance is...)
        #if DEBUGINO == 1
           // EVAL Probably 400meters off in distance of 4000meters. So, for every 10m we have 1meter of mistake?
           // Serial.print( F(" From WT (m): ") ); // WT == White Tower of Thessalonikiw

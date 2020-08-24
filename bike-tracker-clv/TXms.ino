@@ -90,9 +90,9 @@ void checkTXms (){
     GPStime(); updUptime();                                         // update (GPS) fix values and update uptimeGPS
       if ( uptimeGPS - lastTXtime > secondsSleep ) {                // we trasmitted long time ago: Transmit!
         if ( fix.dateTime - GPS_old_time > 30 || fix.hdop == 0 ) {  // We have old fix OR no-fix, re-gain fix.
-         checkFix();
+         checkFix(); return;
         }                                                           // use old-fix
-        checkPin(); transmit();                             
+        checkPin(); transmit(); return;                             
       } else {                                                           // We have to wait to transmit.
         GPSsleep();
       //gps.send_P ( &gpsPort, F("PMTK225,2,3000,300000,0") );             // enable periodic. 1.5mA after fix BUG: LED can stay on!
