@@ -6,12 +6,14 @@ void transmit(){
   
   #if GPS == 1
     #if INDOOR == 1
-      delay(500);          // When debuging with INDOOR, led stays on, wait half second for LED to power off.
+      delay(500);            // When debuging with INDOOR, led stays on, wait half second for LED to power off.
     #endif
       GPSsleep();            // Close GPS we are done
   #endif
 
-  #if LORA_VERB == 1
+  checkBatt();
+
+  #if LORA_VERB == 1 & GPS == 1
     fixes += noFixCount / 5;
     if ( FramePort == FRAME_PORT_NO_GPS ) {
       loraData[5] = fixes >> 8;
@@ -22,8 +24,10 @@ void transmit(){
       loraData[18] = fixes;
       }
   #endif
-  
-  noFixCount = 0;             // reset the counters for gps fixes
+
+  #if GPS == 1
+    noFixCount = 0;             // reset the counters for gps fixes
+  #endif
   
   // EVAL disable INT1 + INT2. So in case of transmission, we don't have INTerruption.
   #if LISDH == 1 | MMA8452 == 1
@@ -53,15 +57,14 @@ void transmit(){
     #endif
     totalTXms = 0;
     } // reset TX counter, we have a new day.
-
-   checkBatt();
+    
    setupLora();
    
    // prepare data for ttn. Lower bits 1-2, are for batC,
    // low bits 3-7 are for TX seconds. Spare (last) bit for TODO (button)
    // totalTXms needs 5 bits
    loraData[1] = ((totalTXms / 1000 ) << 2) | vbatC; // Make room for 2 bits. Add the bits 1+2 (aka: OR vbatC)
-   //loraData[2] = days;                               // Days: max 255 days. TODO: better weeks with 63 max (6bits).
+   loraData[2] = days;                               // Days: max 255 days. TODO: better weeks with 63 max (6bits).
    loraData[3] = txPower;                            // TODO: 5bits -1 to 20dBm, not -80 to 20
    
    #if GPS == 1

@@ -96,6 +96,7 @@ void goToSleep(){
   #if LED == 3
     //ledDEBUG(3, 2000, 2000);
     blinkLed(1, 4000, 0);
+    checkPin();                                // EVAL: BUG #12 (when LED ON INT from MMA is useless)
   #endif
 
   Watchdog.disable();                          // BUG #8 Solution. We need this otherwiser MCU wakes. QST: WHY?

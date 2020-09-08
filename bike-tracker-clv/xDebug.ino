@@ -1,6 +1,6 @@
 void printDebug(){
   
-    #if DEBUGINO == 1
+    #if DEBUGINO == 2
       // for F() macro check https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram (convert SRAM to PROGMEM)
       Serial.print(F("\nFC: ")); Serial.print(fc);
       Serial.print(F(", TotalTXms: "));Serial.print(totalTXms);

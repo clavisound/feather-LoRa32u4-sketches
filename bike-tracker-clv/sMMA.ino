@@ -48,8 +48,7 @@ void setupMMA(){
   pinMode(INT_PIN_TEN, INPUT);            // Pin for INT #1
   pinMode(INT_PIN_ELEVEN, INPUT);         // Pin for INT #2
   digitalWrite (INT_PIN_TEN, HIGH);        // Enable pull-up
-  digitalWrite (INT_PIN_ELEVEN, HIGH);     // Enable pull-up
-  
+  digitalWrite (INT_PIN_ELEVEN, HIGH);     // Enable pull-up  
 }
 
 void readMMA(){

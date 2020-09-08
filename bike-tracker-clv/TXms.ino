@@ -112,14 +112,23 @@ void checkTXms (){
     #endif
 
     #if GPS == 0 & (LISDH == 0 & MMA8452 == 0)
+      updUptime();
       transmit();
+      sleepForSeconds(secondsSleep);
     #endif
 
     #if GPS == 0 & (LISDH == 1 | MMA8452 == 1)
+    updUptime();
+      if ( uptime - endTXtime > (secondsSleep * 1000 ) ) {               // we trasmitted long time ago: Transmit!
       transmit();
+    } else {
+      sleepForSeconds(secondsSleep);
+    }
     #endif
 
     #if GPS == 1 & (LISDH == 0 & MMA8452 == 0)
+      GPStime(); updUptime();                                         // update (GPS) fix values and update uptimeGPS
       transmit();
+      sleepForSeconds(secondsSleep);
     #endif
 }

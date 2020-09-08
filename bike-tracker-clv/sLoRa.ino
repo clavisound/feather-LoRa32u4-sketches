@@ -26,9 +26,10 @@ void setupLora()
 
    #if TWOSF == 1
      // #if GPS == 1
-       if ( totalTXms & 0x01 ) { // if we have odd second select SFB
+       //if ( totalTXms & 0x01 ) { // if we have odd second select SFB
+       if ( currentTXms & 0x01 ) { // if we have odd second select SFB
         #if DEBUGINO == 1
-          Serial.print("\n* SFB: ");Serial.println(totalTXms);
+          Serial.print("\n* SFB: ");Serial.println(currentTXms);
         #endif
         #if SFB == 12
           lora.setDatarate(SF12BW125);
@@ -45,7 +46,7 @@ void setupLora()
         #endif // SFB
         } else { // we have even second, select SF
           #if DEBUGINO == 1
-            Serial.println("\n* SF(a)\n");
+            Serial.print("\n* SFA: ");Serial.println(currentTXms);
           #endif
         #if SF == 12
           lora.setDatarate(SF12BW125);

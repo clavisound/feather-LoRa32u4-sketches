@@ -3,14 +3,15 @@ Here you can find two sketches for [TTNmapper](http://ttnmapper.org). One to use
 FeatherWing GPS. Extra sketch a bike tracker.
 
 What is supported:
-1. Deep sleep. Map for one month (maybe more) with 350mA battery.
+1. Deep sleep. Map for one month (maybe more) with 350mA battery. - if attached accelerometer
 2. GPS sleep.
-3. Cycle SF
-4. Cycle Power
+3. Cycle SF - optional
+4. Cycle Power - optional
 5. Respect to TTN limits (30 seconds per day)
-6. Randomness to vary transmissions (to avoid colissions with other static nodes)
-7. Info / DEBUG via LED
-8. Hopefully, more to come!
+6. Randomness to vary transmissions (to avoid colissions with other static nodes) - optional
+7. Info / DEBUG via LED - optional
+8. Randomnly transmission beetween two predefined SF's. - optional
+9. Hopefully, more to come!
 
 Debug options:
 1. Debugging via Serial (I hope you will not need this)

@@ -6,24 +6,24 @@
 #define SECONDS_SLEEP 180  // Send every secs / mins: MAX 65535''/18hours, 7200''/ 2hours', 4200''/ 90', 3600''/ 1hour', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
 // Take care with SF11-SF12! https://lora-alliance.org/sites/default/files/2018-11/Oct122018_NetID_Alloc_Policy_Application_V3.pdf
 // "network providers (such as TTN) are required to actively block devices that always send on SF11 or SF12, to keep their LoRa Alliance NetID."
-#define SF            7           // [default 10] SF7BW125 to SF10BW125. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
-#define SFB           8           // [default 9] 7 to 10. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
-#define POWER         3           // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
-#define FRAMECOUNTER  800         // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
-#define TWOSF         1           // [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
+#define SF            7      // [default 10] SF7BW125 to SF10BW125. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
+#define SFB           8      // [default 9] 7 to 10. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
+#define POWER         3      // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
+#define FRAMECOUNTER  800    // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
+#define TWOSF         1      // [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
 
 // FEATHER behaviour
-#define LED        3     // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
-#define CHAOS      1     // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +356 program bytes, +3 bytes RAM; [default 1]
-#define CYCLESF    0     // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
-#define STARTDELAY 2     // [default 2] Boot delay seconds.
+#define LED        3         // [default 0] 0 = no led. 1=led for BOOT, TX, ABORT (not IDLE) [+94 bytes program] 2=led for BOOT, (not TX), ABORT, IDLE [+50 bytes program] 3 = ledDEBUG [default: 2]
+#define CHAOS      1         // [default 1] 1 = use some 'random' numbers to generate 'chaos' in delay between TX's. +356 program bytes, +3 bytes RAM; [default 1]
+#define CYCLESF    0         // [default 0] 0 = don't cycleSF, 1 = cycle SF10 to SF8, 2 = send only once per day [default 0 or 3] 3 = from SF7 to SF10, 4 = from SF10 to SF12
+#define STARTDELAY 2         // [default 2] Boot delay seconds.
 
 // DEVICE SELECTION
-#define GPS           1       // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
-#define MMA8452       1       // [default 1] 0 to disable code for MMA8452 accelerator, 1 to enable.
-#define LISDH         0       // [default 0] 1 for LIS3DH  accelerator, 0 for no. Adafruit is not suitable for low power unless you de-solder some stuff. +0.7mA in sleeping. But it's not a bad choice if you don't care about the battery life.
-#define GPS_SLEEP_PIN 0       // default 0. If `1' connect A4 (feather) to EN pin (Ultimate GPS)
-#define GPS_TRANSISTOR_PIN 1  // [default 0] 1 to enable 'transistor' code. Using 330R resistor (base) with a PNP transistor. Collector connected to feather 3V3.
+#define GPS                1    // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
+#define MMA8452            1    // [default 1] 0 to disable code for MMA8452 accelerator, 1 to enable.
+#define LISDH              0    // [default 0] 1 for LIS3DH  accelerator, 0 for no. Adafruit is not suitable for low power unless you de-solder some stuff. +0.7mA in sleeping. But it's not a bad choice if you don't care about the battery life.
+#define GPS_SLEEP_PIN      0    // [default 0] If `1' connect A4 (feather) to EN pin (Ultimate GPS)
+#define GPS_TRANSISTOR_PIN 0    // [default 0] 1 to enable 'transistor' code to bypass EN pin. Using 270R resistor (base) with a PNP transistor. Collector connected to feather 3V3.
                             
 //#define BUZZER      1     // TODO [default 0] 1 to hear some beeps!
 
@@ -32,7 +32,7 @@
 #define INDOOR    0     // [default 0] For DEBUG INDOORs
 #define PHONEY    0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 #define LORA_VERB 1     // [default 0] 1 to send verbose (DEBUG) messages via LoRa.
-#define TRISTATE  0     // Ignore. Failed experiment for tristate. More Info: https://forums.adafruit.com/viewtopic.php?p=497713#p497708
+//#define TRISTATE  0     // Ignore. Failed experiment for tristate. More Info: https://forums.adafruit.com/viewtopic.php?p=497713#p497708
 
 // Data Packet to Send to TTN
 #if LORA_VERB == 1
@@ -173,8 +173,8 @@ uint16_t fc = FRAMECOUNTER;
 
 #if DEBUGINO == 0
   uint16_t wtimes, times;	    // watchdog times
-  bool     overflow;    // TODO wtimes uint16_t MAX 65535 seconds aka 18.2 hours 43200 = 12 hours. Handle that with overflow.
-  uint16_t sleepMS;     // normally 8000, maybe we can scrap this.
+  bool     overflow;          // TODO wtimes uint16_t MAX 65535 seconds aka 18.2 hours 43200 = 12 hours. Handle that with overflow.
+  uint16_t sleepMS;           // normally 8000, maybe we can scrap this.
 #endif
 
 // Pinout for Adafruit Feather 32u4 LoRa
@@ -205,11 +205,11 @@ uint16_t blinks = secondsSleep / 8; // blink every 8 seconds (maximum of watchdo
 // after 24 hours (86.400.000 millis), we can re-send messages if we hit the wall (TTN rule)
 // millis are rollover after 49 days and 17 hours
 // rollover check: https://www.baldengineer.com/arduino-how-do-you-reset-millis.html
-uint32_t endTXtime;
+uint32_t endTXtime =  86400;        // to send first message.
 
 void setup(){
 
-  // to gain -2mA.
+  // to gain -2mA ONLY during first fix. Comment both lines if you don't bother to install my custom TinyLoRa library.
   setupLora();
   lora.sleep();
   
@@ -218,16 +218,20 @@ void setup(){
 
   #if DEBUGINO == 1
     Serial.begin(9600);
-    //while (! Serial); // don't start unless we have serial connection
+    while (! Serial); // don't start unless we have serial connection
   #endif
 
   #if GPS_TRANSISTOR_PIN == 1             // First thing to do, power up GPS
-  #define PNP_GPS_PIN A4
-   pinMode(PNP_GPS_PIN, OUTPUT);    // Initialize pin LED_BUILTIN as an output
-   digitalWrite(PNP_GPS_PIN, LOW);  // Power on GPS
-   #if DEBUGINO == 1
-     Serial.println("\n PNP on");
-   #endif
+    #define PNP_GPS_PIN A4
+    pinMode(PNP_GPS_PIN, OUTPUT);    // Initialize pin LED_BUILTIN as an output
+    #if GPS == 1
+      digitalWrite(PNP_GPS_PIN, LOW);     // Power on GPS
+      #else
+      digitalWrite(PNP_GPS_PIN, HIGH);    // Power off GPS
+    #endif
+    #if DEBUGINO == 1
+      Serial.println("\n PNP on");
+    #endif
   #endif
   
   #if LED > 0

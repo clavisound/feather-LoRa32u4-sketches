@@ -81,6 +81,8 @@
 // BUG #8 [Done]: Feather ON after goToSleep(!) if DEBUGINO == 0 (!!). Solution: Watchdog was waking the MCU, disable watchdog before sleep.
 // BUG #9: Slow operation with Battery (3xAA eneloop style) vs USB (!)
 // BUG #10: Without GPS totalTXms is resetting. Check 
+// BUG #11: Attached all devices: when GPS 1, ACCEL 0 vbat is ok only for two readings (!!). If GPS 1 ACCEL 1 vbat only first time is ok (!). If GPS 0 ACEL 0 vbat seems fine (!)
+// BUG #12: if LED on (see: goToSleep DEBUGINO 0) and we have accel event, then the next events can't wake up the device!
 
 // Senario #1: GPS   fix and speed 0    > accel sensitive > power down > wait accel for ever.
 // Senario #2: GPS noFix                > accel sensitive > power down > wait accel for ever.

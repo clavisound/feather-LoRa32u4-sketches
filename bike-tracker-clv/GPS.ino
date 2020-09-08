@@ -84,7 +84,9 @@ void checkFix() {
           updUptime();
           prepareGPSLoRaData();
 
-          checkPin();
+          #if LISDH == 1 | MMA8452 == 1
+            checkPin();
+          #endif
           transmit();
           return;
 
@@ -112,9 +114,10 @@ void checkFix() {
             FramePort = FRAME_PORT_NO_GPS;
             loraSize = LORA_HEARTBEAT;
 
-            checkPin();
+            #if LISDH == 1 | MMA8452 == 1
+              checkPin();
+            #endif
             transmit();                        // Small BUG: normally we should call checkTXms to check for new day or TTN limits.
-            
             return;
         }
       } // no fix
@@ -346,8 +349,8 @@ void prepareGPSLoRaData(){
             loraData[15] = 0;
           } else {
             loraData[14] = fix.alt.whole >> 8;     // MSB altitude 16bits
-            loraData[15] = fix.alt.whole;          // TODO, we don't need those two bytes if we have < 255 metres.
-          }                                        // ^^ divide by 3 so in 8bits we have max alt of 765m
+            loraData[15] = fix.alt.whole;          // TODO: divide by 50. Everest is 8846m / 50 = 178, Olympus: 2900m = 58 [6bits] 750m [4bits]
+          }
           loraData[12] = fix.satellites;           // TODO: min sats are 3. 0001 = 3 0010 = 4 e.t.c. [we need 4 bits for 16 sats]
           loraData[13] = speed;                    // TODO: divide by 3 to have max speed of 90 with 5 bits. 2nd options 4bits speed (1-32) [divided by 4]
           loraData[16] = fix.heading_cd() / 200;   // NeoGPS multiplies by 100. We divide by two to fit in one byte
@@ -360,7 +363,7 @@ void prepareGPSLoRaData(){
             displayGPS();
           #endif
           
-          return;
+          // return; // EVAL comment
 }
 
 uint8_t checkDistance(){
