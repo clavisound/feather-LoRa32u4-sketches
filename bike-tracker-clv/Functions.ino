@@ -30,17 +30,11 @@ void ledDEBUG(int16_t times, uint16_t duration, uint16_t pause){ // x, ms, ms
 
 void sleepForSeconds(uint16_t secs, uint8_t wdtogSecs = 8){ // sleep for seconds  (maximum is 65535 seconds = 18.2 hours) 43200 = 12 hours. wdtogMS = 8, 2, 4, 1
   #if DEBUGINO == 1
-  /*
-      wtimes = secs / wdtogSecs;                       // watchdog times.
-    if ( wtimes == 0 ) wtimes = 1;                 // wait at least 8 seconds
-      for ( wtimes > 0; wtimes--; ) {
-        uptime += Watchdog.sleep(wdtogSecs * 1000);    // Sleep and uptdate uptime because Watchdog reset millis.
-        */
-    delay(secs * 1000);
+    Serial.print("Sleep ");Serial.println(secondsSleep * 1000);
+    delay(secondsSleep * 1000);
   #else
-
     wtimes = secs / wdtogSecs;                       // watchdog times.
-    if ( wtimes == 0 ) wtimes = 1;                 // wait at least 8 seconds
+    if ( wtimes == 0 ) wtimes = 1;                   // wait at least 8 seconds
       for ( wtimes > 0; wtimes--; ) {
         uptime += Watchdog.sleep(wdtogSecs * 1000);    // Sleep and uptdate uptime because Watchdog reset millis.
   }

@@ -18,6 +18,8 @@ void checkBatt(){
     // IMPORTANT: 465.5 = 3.0Volt. < DON'T GO THERE! Those are safe: 480 (30) = 3.1Volts, 496 (46) = 3.2 volts
     // Capacity measured with voltage is not linear! https://learn.adafruit.com/assets/979
     // 3.95V is 80%, 3.8V = 60%, 3.75 = 40%, 3.7Volt = 20%
+
+    // 3.4 feather-clv raw: 77 (only LoRa) is off!
     if ( vbat < 29 ) {
       vbatC = 0;
     }

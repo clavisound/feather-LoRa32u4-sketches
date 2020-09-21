@@ -368,7 +368,6 @@ void prepareGPSLoRaData(){
 
 uint8_t checkDistance(){
     GPS_old_time = fix.dateTime;
-    return 1; // Uncomment for DEBUG (send whatever the distance is...)
        #if DEBUGINO == 1
           // EVAL Probably 400meters off in distance of 4000meters. So, for every 10m we have 1meter of mistake?
           // Serial.print( F(" From WT (m): ") ); // WT == White Tower of Thessalonikiw
@@ -379,7 +378,7 @@ uint8_t checkDistance(){
           Serial.println( oldLat);Serial.println(oldLon);Serial.println(fix.latitude() * 10E5);Serial.println(fix.longitude() * 10E5 );
        #endif
 
-     if ( DistanceBetween(oldLat, oldLon, fix.latitude() * 10E5, fix.longitude() * 10E5 ) > 49 ) { // distance more than 49 meters
+     if ( DistanceBetween(oldLat, oldLon, fix.latitude() * 10E5, fix.longitude() * 10E5 ) >= SAMEDISTANCE ) { // distance more than 49 meters
       return 1;
      } else {
       return 0;

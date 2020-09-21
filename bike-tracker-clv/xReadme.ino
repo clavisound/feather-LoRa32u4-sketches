@@ -127,3 +127,5 @@
 // 0.80V E Buzzer OFF (!) (0.15mA?)
 // Base: 8.13ma ON, 0.02ma OFF
 // With Ultimate featherwing GPS 3.24V
+
+// 7bits LoRaWAN = 63ms ToA (arduino millis) vs 57ms (theory)

@@ -6,10 +6,10 @@
 #define SECONDS_SLEEP 180  // Send every secs / mins: MAX 65535''/18hours, 7200''/ 2hours', 4200''/ 90', 3600''/ 1hour', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
 // Take care with SF11-SF12! https://lora-alliance.org/sites/default/files/2018-11/Oct122018_NetID_Alloc_Policy_Application_V3.pdf
 // "network providers (such as TTN) are required to actively block devices that always send on SF11 or SF12, to keep their LoRa Alliance NetID."
-#define SF            7      // [default 10] SF7BW125 to SF10BW125. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
-#define SFB           8      // [default 9] 7 to 10. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
-#define POWER         3      // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but pay attention to the antenna. You need 1% duty cycle and VWSR ??
-#define FRAMECOUNTER  800    // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
+#define SF            10     // [default 10] SF7BW125 to SF10BW125. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
+#define SFB           9      // [default 9] 7 to 10. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
+#define POWER         17     // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but PAY ATTENTION TO THE ANTENNA if +20dBm: You need 1% duty cycle and VWSR ??
+#define FRAMECOUNTER  0      // framecounter. We need this variable if we sleep When sleeping LoRa module forgets everything. TODO store in EEPROM
 #define TWOSF         1      // [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
 
 // FEATHER behaviour
@@ -23,16 +23,17 @@
 #define MMA8452            1    // [default 1] 0 to disable code for MMA8452 accelerator, 1 to enable.
 #define LISDH              0    // [default 0] 1 for LIS3DH  accelerator, 0 for no. Adafruit is not suitable for low power unless you de-solder some stuff. +0.7mA in sleeping. But it's not a bad choice if you don't care about the battery life.
 #define GPS_SLEEP_PIN      0    // [default 0] If `1' connect A4 (feather) to EN pin (Ultimate GPS)
-#define GPS_TRANSISTOR_PIN 0    // [default 0] 1 to enable 'transistor' code to bypass EN pin. Using 270R resistor (base) with a PNP transistor. Collector connected to feather 3V3.
+#define GPS_TRANSISTOR_PIN 1    // [default 0] 1 to enable 'transistor' code to bypass EN pin. Using 270R resistor (base) with a PNP transistor. Collector connected to feather 3V3.
                             
 //#define BUZZER      1     // TODO [default 0] 1 to hear some beeps!
 
 // DEBUG options
-#define DEBUGINO  0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
-#define INDOOR    0     // [default 0] For DEBUG INDOORs
-#define PHONEY    0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
-#define LORA_VERB 1     // [default 0] 1 to send verbose (DEBUG) messages via LoRa.
-//#define TRISTATE  0     // Ignore. Failed experiment for tristate. More Info: https://forums.adafruit.com/viewtopic.php?p=497713#p497708
+#define DEBUGINO      0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
+#define INDOOR        0     // [default 0] For DEBUG INDOORs
+#define PHONEY        0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
+#define LORA_VERB     1     // [default 0] 1 to send verbose (DEBUG) messages via LoRa.
+#define SAMEDISTANCE 50     // [default 50] Don't send GPS data if the distance is less than 50meters
+//#define TRISTATE  0       // Ignore. Failed experiment for tristate. More Info: https://forums.adafruit.com/viewtopic.php?p=497713#p497708
 
 // Data Packet to Send to TTN
 #if LORA_VERB == 1
