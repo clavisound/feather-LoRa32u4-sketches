@@ -26,12 +26,12 @@ function Decoder(bytes, port) {
   
    if (port === 11) { // LORA_VERB heartbeat
   
-  decoded.vbatRaw  =  bytes[0]; // raw battery - 450. Range 460 - 700
-  decoded.vbatArea =  bytes[1] & 3; // AND 00000011 (gives values betwwen 0-3, aka: 0, 30, 60, 90%)
-  decoded.TXsecs   = (bytes[1] & 252) >> 2; // AND 11111100 then shift 2 positions for correct value.
-  decoded.days     =  bytes[2]; // uptime in days. Overflow after 255 days.
-  decoded.uptime   =  bytes[4]; // uptime in hours
-  decoded.noFix    =  bytes[5]; // failed Fixes
+  decoded.vbatRaw  =  bytes[0];                 // raw battery - 450. Range 460 - 700
+  decoded.vbatArea =  bytes[1] & 3;             // AND 00000011 (gives values betwwen 0-3, aka: 0, 30, 60, 90%)
+  decoded.TXsecs   = (bytes[1] & 252) >> 2;     // AND 11111100 then shift 2 positions for correct value.
+  decoded.days     =  bytes[2];                 // uptime in days. Overflow after 255 days.
+  decoded.uptime   =  bytes[4];                 // uptime in hours
+  decoded.noFix    =  (bytes[5] << 8 | bytes[6]) * 5; // failed Fixes
   // handle negative number
     if ( ( bytes[3] & 128 ) == 128 ) {
       decoded.dBm = (bytes[3] ^ 255) * -1; // XOR with 11111111
@@ -94,6 +94,9 @@ function Decoder(bytes, port) {
   
   // ttnmapper format
    if (port === 18) {
+
+
+     
   //decoded.user_agent = "bike-tracker-clv";
   decoded.vbatRaw  =  bytes[0]; 		// raw battery - 450. Range 460 - 700
   decoded.vbatArea =  bytes[1] & 3; 		// AND 00000011 (gives values betwwen 0-3, aka: 0, 30, 60, 90%)
@@ -114,7 +117,7 @@ function Decoder(bytes, port) {
     decoded.sats      = bytes[12];
     decoded.speed     = bytes[13];
     decoded.heading   = bytes[16] * 2;
-    decoded.noFix     = bytes[17];
+    decoded.noFix     = (bytes[17] << 8 | bytes[18]) * 5;
    }
   
   return decoded;
