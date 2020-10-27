@@ -41,8 +41,10 @@ void checkFix() {
           Serial.print(F("\nYES fix\n"));
         #endif
 
-        speed = (int)fix.speed_kph();      
-        // checkSpeed();                   // EVAL: modify GPS rate and TAP according to speed.
+        speed = (int)fix.speed_kph();
+        if ( speed == 31 ) { speed = 30; }        //
+        if ( speed > 31  ) { FramePort |= 0x01; } // Set HighSpeed port.
+        // checkSpeed();                          // EVAL: modify GPS rate and TAP according to speed.
 
           if ( checkDistance() == 1 ) {    // new location. Prepare data and send.
             #if DEBUGINO == 1
@@ -53,8 +55,11 @@ void checkFix() {
             return;
             
           } else {                         // same location, send samelocation.
-            FramePort = FRAME_PORT_NO_GPS; // TODO: PORT for same location
-            loraSize = LORA_HEARTBEAT;     // don't send the GPS data.
+            #if LORA_VERB == 1
+              loraSize = LORA_HEARTBEAT;     // don't send the GPS data, but be verbose
+            #else
+              loraSize = LORA_HEARTBEAT;     // don't send the GPS data. Only battery with 5% steps
+            #endif
 
             #if DEBUGINO == 1
               printDebug();
@@ -71,6 +76,8 @@ void checkFix() {
         // Send High HDOP fix.
         // we have many efforts and bad quality HDOP. Don't waste energy with GPS seeking.
         if ( ++noFixCount >= NO_FIX_COUNT / 2 && fix.hdop >= HDOP_LIMIT ) {
+
+          FramePort |= 0x10; // decimal: 16 - 5th bit
            
           #if DEBUGINO == 1
             Serial.print(F("High HDOP fix: GIVE UP secs: ")); Serial.println(uptime / 1000);
@@ -111,8 +118,12 @@ void checkFix() {
           #endif
 
             updUptime();
-            FramePort = FRAME_PORT_NO_GPS;
-            loraSize = LORA_HEARTBEAT;
+
+            #if LORA_VERB == 1
+              loraSize = LORA_HEARTBEAT;
+            #else
+              loraSize = LORA_HEARTBEAT; // send only battery, but with 5bits (5% steps)
+            #endif
 
             #if LISDH == 1 | MMA8452 == 1
               checkPin();
@@ -162,7 +173,7 @@ void displayGPS() {
   Serial.print(F("\nGPS time (s): ")); Serial.print( fix.dateTime );
   Serial.print(F("\nHDOP: ")); Serial.print( fix.hdop ); Serial.print(F(", latitude: ")); Serial.print( fix.latitude(), 6 ); Serial.print(F(", longitude: ")); Serial.println( fix.longitude(), 6 );
   //Serial.print(F("lat / lon: "));Serial.print( lat ); Serial.print(F(" "));Serial.println( lon );
-  Serial.print(F("alt: ")); Serial.print( fix.alt.whole ); Serial.print(F(", sats: ")); Serial.print( fix.satellites );
+  Serial.print(F("alt: ")); Serial.print( fix.alt.whole ); Serial.print(F(", sats: ")); Serial.print( fix.satellites );Serial.print(F(", head: ")); Serial.print( fix.heading_cd() / 100 );
   //Serial.print(F(", speed: ")); Serial.print(speed);
   Serial.print(F(", LoRa HDOP: ")); Serial.println(loraData[11]);
 }
@@ -214,7 +225,7 @@ void GPSsleep() {
     Serial.print(F("\n* GPS OFF\n"));
   #endif
 
-  #if GPS_SLEEP_PIN == 1
+  #if GPS_SLEEP_PIN_EN == 1
     digitalWrite(GPS_SLEEP_PIN, HIGH);         // Power OFF GPS.
     //tristateSerialB();
   #else
@@ -245,7 +256,7 @@ void GPSsleep() {
    //tristateSerialB();
    #endif // TRISTATE
   //gps.send_P ( &gpsPort, F("PMTK225,9") );     // Periodic Mode, Always Locate (standby) 8 for standby, 9 for backup.
-  #endif // GPS_SLEEP_PIN (else)
+  #endif // GPS_SLEEP_PIN_EN (else)
   
   #if LED == 3
     // ledDEBUG(1, 1900, 100);
@@ -269,21 +280,21 @@ void GPSwake() {
    delay(200);
  #endif
 
-  #if GPS_SLEEP_PIN == 1
+  #if GPS_SLEEP_PIN_EN == 1
     digitalWrite(GPS_SLEEP_PIN, LOW);             // Power ON GPS.
     #if TRISTATE == 1
       gpsPort.begin(9600);                          // Open UART
     #endif // TRISTATE
-  #else // GPS_SLEEP_PIN != 0
+  #else // GPS_SLEEP_PIN_EN != 0
     #if TRISTATE == 1
       gpsPort.begin(9600);                          // Open UART
       delay(1000);                                  // Wait UART to open
-  #endif // GPS_SLEEP_PIN
+  #endif // GPS_SLEEP_PIN_EN
     gps.send_P ( &gpsPort, F("PMTK000") );       // module wakes up with ANY communication
     delay(200);
   //gps.send_P ( &gpsPort, F("PMTK225,0") );     // disable Periodic.
   delay(200);
-  #endif // GPS_SLEEP_PIN
+  #endif // GPS_SLEEP_PIN_EN
 }
 
 void GPSfastRate() {
@@ -318,22 +329,22 @@ void prepareGPSLoRaData(){
   #if DEBUGINO == 1
     Serial.println("* prepareGPSLoRa");
   #endif
-          
-          FramePort = FRAME_PORT_GPS; // We have GPS data, choose decoder with GPS.
-          loraSize = LORA_TTNMAPPER;
 
           // https://github.com/ricaun/esp32-ttnmapper-gps/blob/8d37aa60e96707303ae07ca30366d2982e15b286/esp32-ttnmapper-gps/lmic_Payload.ino#L21
           // accuracy till 5-6 decimal
           lat = ((fix.latitude() + 90) / 180) * 16777215;
           lon = ((fix.longitude() + 180) / 360) * 16777215;
 
-          loraData[5]  = lat >> 16;      // MSB
-          loraData[6]  = lat >> 8;
-          loraData[7]  = lat;            // LSB
+          #if LORA_VERB == 1
+            loraSize = 17;
+            
+            loraData[5]  = lat >> 16;      // MSB
+            loraData[6]  = lat >> 8;
+            loraData[7]  = lat;            // LSB
 
-          loraData[8]  = lon >> 16;
-          loraData[9]  = lon >> 8;
-          loraData[10] = lon;
+            loraData[8]  = lon >> 16;
+            loraData[9]  = lon >> 8;
+            loraData[10] = lon;
 
           if ( fix.hdop >= 255000 ) {      // If DOP is more than 255, store 25.5
             loraData[11] = 255;            // I don't want to handle DOP in two bytes. MAX DOP stored is 255000.
@@ -343,22 +354,50 @@ void prepareGPSLoRaData(){
             // So... value of 830 (DOP 0.83) TXmitted as 8 and in decoder divided as 0.8
             // EVAL: optimization with divide by two and use less bits?
           }
+            loraData[12] = (fix.satellites - 3) & 0x00FF;   // TODOTTN: min sats are 3. 0000 = 3, 0010 = 5 e.t.c. [we need 4 bits for 18 sats]
+            loraData[12] |= (fix.heading_cd() / 2400) << 4; // TODOTTN: NeoGPS multiplies by 100. We divide by 24 to fit in one nibble.
+     // OLD loraData[16] = fix.heading_cd() / 200;          // NeoGPS multiplies by 100. We divide by two to fit in one byte (divide by 6 fits in 6 bits)
+            loraData[13] = speed;
+            
+           if ( fix.alt.whole < 0 ) {       // somegps may report minus altitude. Handle that.
+              loraData[14] = 0;
+            } else {
+              loraData[14] = fix.alt.whole / 25;           // TODOTTN: divide by 25. Alternative: divide by 50. Everest is 8846m / 50 = 178, Olympus: 2900m = 58 [6bits] 750m [4bits]
+            }
+          #else // LORA_VERB == 0
+          if ( ttncounter < 10 || fix.hdop >= TTNMAPPING ) {    // wait 10 times to send to TTNmapper. Or if bad HDOP, again don't send to TTNmapper
+            ttncounter++;
+            loraSize = 7;
+            
+            loraData[0] = lat >> 16;      // MSB
+            loraData[1] = lat >> 8;
+            loraData[2] = lat;            // LSB
 
-          if ( fix.alt.whole < 0 ) {       // somegps may report minus altitude. Handle that.
-            loraData[14] = 0;
-            loraData[15] = 0;
-          } else {
-            loraData[14] = fix.alt.whole >> 8;     // MSB altitude 16bits
-            loraData[15] = fix.alt.whole;          // TODO: divide by 50. Everest is 8846m / 50 = 178, Olympus: 2900m = 58 [6bits] 750m [4bits]
+            loraData[3] = lon >> 16;
+            loraData[4] = lon >> 8;
+            loraData[5] = lon;
+            
+            loraData[6] = fix.heading_cd() / 2400;       // TODOTTN: NeoGPS multiplies by 100. We divide by 24 to fit in one nibble.
+            loraData[6] |= ( speed / 2 ) << 4;           // TODOTTN: divide by 2 to have max speed of 30 with 4 bits with 2km/h steps.
+
+            oldLat = fix.latitude()  * 10E5;             // store lat / lon to compare with next fix.
+            oldLon = fix.longitude() * 10E5;
           }
-          loraData[12] = fix.satellites;           // TODO: min sats are 3. 0001 = 3 0010 = 4 e.t.c. [we need 4 bits for 16 sats]
-          loraData[13] = speed;                    // TODO: divide by 3 to have max speed of 90 with 5 bits. 2nd options 4bits speed (1-32) [divided by 4]
-          loraData[16] = fix.heading_cd() / 200;   // NeoGPS multiplies by 100. We divide by two to fit in one byte
-						   // TODO: divide by 6 to fit in 6bits
-
-          oldLat = fix.latitude()  * 10E5;         // store lat / lon to compare with next fix.
-          oldLon = fix.longitude() * 10E5;
-
+          #if TTNMAPPING > 0
+          else if ( ttncounter > 9 && fix.hdop < TTNMAPPING ) { // ttnmapping!
+            loraSize = 9;
+            ttncounter = 0;
+            loraData[7] = fix.hdop / 200;    // TODOTTN: I divide with 200 to make 2999 = 14.995 HDOP stored as 14. Re-divided in TTN with 5 = 2.8. Fits in nibble.
+            if ( fix.alt.whole < 0 ) {       // somegps may report minus altitude. Handle that.
+              loraData[8] = 0;               // erase left nibble.
+            } else {
+              loraData[8] = fix.alt.whole / 25;           // TODOTTN: divide by 25. Alternative: divide by 50. Everest is 8846m / 50 = 178, Olympus: 2900m = 58 [6bits] 750m [4bits]
+            }
+              loraData[7] |= (fix.satellites - 3) << 4;  // TODOTTN: min sats are 3. 0000 = 3, 0010 = 5 e.t.c. [we need 4 bits for 18 sats]            
+            }
+            #endif
+          #endif
+          
           #if DEBUGINO == 1
             displayGPS();
           #endif

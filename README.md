@@ -1,22 +1,24 @@
 # feather-LoRa32u4-sketches
-Here you can find two sketches for [TTNmapper](http://ttnmapper.org). One to use Adafruit Feather LoRa 32u4 with smartphone and one with
-FeatherWing GPS. Extra sketch a bike tracker.
+Here you can find three sketches. Two for [TTNmapper](http://ttnmapper.org). One to use Adafruit Feather LoRa 32u4 with smartphone and one with
+FeatherWing GPS. Extra sketch is a bike tracker.
 
 What is supported:
-1. Deep sleep. Map for one month (maybe more) with 350mA battery. - if attached accelerometer
+1. Deep sleep. Map for one month (maybe more) with 350mA battery --- if attached accelerometer
 2. GPS sleep.
-3. Cycle SF - optional
-4. Cycle Power - optional
+3. Cycle SF --- optional.
+4. Cycle Power --- optional.
 5. Respect to TTN limits (30 seconds per day)
-6. Randomness to vary transmissions (to avoid colissions with other static nodes) - optional
-7. Info / DEBUG via LED - optional
-8. Randomnly transmission beetween two predefined SF's. - optional
-9. Hopefully, more to come!
+6. Randomness to vary transmissions (to avoid colissions with other static nodes) --- optional.
+7. Info / DEBUG via LED --- optional
+8. Randomnly transmission beetween two predefined SF's --- optional.
+9. Transmit only if we are away 50 meteres --- configurable.
+10. Hopefully, more to come!
 
 Debug options:
 1. Debugging via Serial (I hope you will not need this)
 2. PHONEY mode (for debugging - no transmission. Emulates some transmission time)
 3. INDOOR mode (more debugging help)
+4. TODO: Send DEBUG data via LoRaWAN.
 
 ## You need in both
 1. Modify `TinyLoRa.h` according to your region!

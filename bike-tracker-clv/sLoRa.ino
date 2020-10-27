@@ -7,9 +7,9 @@ void setupLora()
   lora.setChannel(MULTI); // define multi-channel sending or CH0, CH1 to CH7
 
   // TX times as counted by this program. (Yes I also found some results* bizzare)
-  // (for 4 bytes) 7:  58ms, 8:  99ms  9: 172ms 10: 337ms  11: 667ms* 12: 1325ms
-  // (for 2 bytes) 7:  53ms, 8: 102ms* 9: 172ms 10: 338ms* 11: 665ms  12: 1161ms
-  // (for 5 bytes) 7:  85ms,
+  // (for 2 bytes) 7:  53ms, 8: 102ms  9: 172ms 10: 338ms 11: 665ms 12: 1161ms
+  // (for 4 bytes) 7:  58ms, 8:  99ms  9: 172ms 10: 337ms 11: 667ms 12: 1325ms*
+  // (for 5 bytes) 7:  85ms*,
 
   /* calculate TX's per day for 4 bytes payload.
    *  (30000ms / 353ms) = how many times per day?

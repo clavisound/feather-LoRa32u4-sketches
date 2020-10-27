@@ -1,9 +1,13 @@
 void checkBatt(){
 
     vbat = analogRead(VBATPIN) - 450; // convert to 8bit
-    //#if LORA_VERB == 1
+    
+    #if LORA_VERB == 1
       loraData[0] = vbat; // loraData[0] = highByte(vbat);loraData[1] = lowByte(vbat);
-    //#endif
+    #endif
+
+    if ( loraSize == LORA_HEARTBEAT ) { loraData[0] = (vbat / 5) & 0b00011111; }   // 5 steps
+    
     /*
     vbat *= 2;    // we divided by 2, so multiply back
     vbat *= 3.3;  // Multiply by 3.3V, our reference voltage
@@ -24,10 +28,12 @@ void checkBatt(){
       vbatC = 0;
     }
     else {
-    vbatC = map(vbat, 30, 150, 0, 3);
+      vbatC = map(vbat, 30, 150, 0, 3);
     }
-      
-    if ( vbatC > 3 ){ vbatC = 3; } // sometimes vbat is > 635 (aka: 185 after 8bit conversion) and we have overflow.
+
+    if ( vbatC > 3 ) { vbatC = 3; }  // sometimes vbat is > 635 (aka: 185 after 8bit conversion) and we have overflow.
+
+    FramePort |= vbatC << 2;         // vbatC to FramePort. 00001100 = 3
     
     #if DEBUGINO == 1
       Serial.print(F("* VBat (8bit): ")); Serial.print(vbat);Serial.print(F(", VBatB (volt): ")); Serial.print((vbat + 450) * 0.0064453125);

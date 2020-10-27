@@ -11,7 +11,15 @@
 // a. setup account in TTN, integrate with ttnmapper.
 // b. install in your mobile phone ttnmapper and setup as experimental
 // unless you use only SF7. ttnmapper wants only SF7.
-//
+
+// Port definitions.
+// SPEEDHIGH  = 1;  // 0x01
+// FALL       = 2;  // 0x02
+// BATLSB     = 4;  // 0x04
+// BATMSB     = 8;  // 0x08
+// LOWQGPS    = 16; // 0x10
+// TTNMAPPER  = 32; // 0x20
+
 // What this program do with the feather-32u4-lora
 // 1. After power up we have 6 blinks with NO activity. (in case you want to abort example
 // 2. Sends data with SF that *YOU* define.
@@ -106,9 +114,9 @@
 // Debug via Serial adds 5mA or more?
 
 // TODO: Test MMA8452 on road (seems ok in-house)
-// TODO: Test current with GPS antenna
+// DONE: Test current with GPS antenna
 // TODO: Test GPS antenna in bike
-// TODO: Test LoRa antenna in bike
+// semi-DONE: Test LoRa antenna in bike
 
 // TRANSISTOR testing: GPS Ultimate featherwing *sometimes* wants 36mA, but normally ~25mA. It resets sometimes.
 // Measurements with feather
@@ -117,6 +125,7 @@
 // 220R base 11.5mA (Emitter 50mA (10R on emitter))
 
 // GPS Featherwing Ultimate when seeking fix: 30-35mA.
+// with external 18x18 active: +5mA - +10mA
 
 // 120mAh LiPo measurements
 // When 3.6V operating 3.52V
@@ -128,4 +137,7 @@
 // Base: 8.13ma ON, 0.02ma OFF
 // With Ultimate featherwing GPS 3.24V
 
-// 7bits LoRaWAN = 63ms ToA (arduino millis) vs 57ms (theory)
+// 7bytes LoRaWAN = 63ms ToA (arduino millis) vs 57ms (theory)
+
+// CHECK: GPS sleep pin
+// CHECK: new ports and data

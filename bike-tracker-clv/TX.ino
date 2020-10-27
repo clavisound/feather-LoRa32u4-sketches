@@ -1,5 +1,12 @@
 void transmit(){
 
+  // FramePort setup from values 0: speedHigh, 1: fall (TODO), 2: batlsb, 3: batmsb, 4: lowqgps, 5: ttnmapper
+  // check batt.ino, GPS.ino (twice)
+
+  // hack to select a contradictory port if we have low speed AND no-fall AND low-battery AND high-HDOP AND no-ttnmapper
+  // if FramePort is 0 because speedHigh = 0, fall = 0, bat = 0, lowqgps = 0 and ttnmapper = 0
+  if ( FramePort == 0 ) { FramePort = 0x30; } // then select lowqgps = 1 and ttnmapper = 1 which means not ttnmapper but also not lowqgps!
+
   #if DEBUGINO == 1
     Serial.println("\n* TX");
   #endif
@@ -14,14 +21,15 @@ void transmit(){
   checkBatt();
 
   #if LORA_VERB == 1 & GPS == 1
-    fixes += noFixCount / 5;
-    if ( FramePort == FRAME_PORT_NO_GPS ) {
-      loraData[5] = fixes >> 8;
-      loraData[6] = fixes;
+    fixes += noFixCount / 60;                    // add noFixCount to fixes, convert to minutes.
+    if ( loraSize == LORA_HEARTBEAT ) {          // we don't have GPS data
+      #if DEBUGINO == 1
+        Serial.println(F("\n* LORA_VERB"));
+      #endif
+      loraData[5] = fixes;
       }
     else {
-      loraData[17] = fixes >> 8;
-      loraData[18] = fixes;
+      loraData[15] = fixes;    // we have GPS data.
       }
   #endif
 
@@ -63,18 +71,24 @@ void transmit(){
    // prepare data for ttn. Lower bits 1-2, are for batC,
    // low bits 3-7 are for TX seconds. Spare (last) bit for TODO (button)
    // totalTXms needs 5 bits
-   loraData[1] = ((totalTXms / 1000 ) << 2) | vbatC; // Make room for 2 bits. Add the bits 1+2 (aka: OR vbatC)
-   loraData[2] = days;                               // Days: max 255 days. TODO: better weeks with 63 max (6bits).
-   loraData[3] = txPower;                            // TODO: 5bits -1 to 20dBm, not -80 to 20
+   #if LORA_VERB == 1
+     loraData[1] = ((totalTXms / 1000 ) << 2);         // Make room for 2 bits.
+     loraData[2] = days;                               // Days: max 255 days. TODO: better weeks with 63 max (6bits).
+     if ( txPower == -80 ) {
+        loraData[3] = 31;
+      } else {
+        loraData[3] = txPower;                        // 5bits 0dBm - 20dBm
+      }
+   #endif
    
    #if GPS == 1
-     //#if LORA_VERB == 1
+     #if LORA_VERB == 1
        loraData[4] = ( uptimeGPS % DAY ) / 3600;       // convert seconds to hours [TODO: 24hours = 5bits (see blinkLed)]
-     //#endif
+     #endif
    #else
-     //#if LORA_VERB == 1
+     #if LORA_VERB == 1
        loraData[4] = uptime / 1000 / 60 / 60;          // convert ms to hours [TODO: 24hours = 5bits (see blinkLed)]
-     //#endif
+     #endif
    #endif
    
    // loraData of GPS data are in GPS tab.
@@ -130,11 +144,11 @@ void transmit(){
     Serial.print(F("ms transmitted: ")); Serial.println(currentTXms);
     Serial.print(F("HEX: "));
     for ( uint8_t counter = 0; counter < loraSize; counter++ ) {
-      if ( loraData[counter] < 17 ) Serial.print("0"); // Add one zero if value is 0-F
+      if ( loraData[counter] < 0x11 ) Serial.print("0"); // Add one zero if value is 0-F
         Serial.print(loraData[counter], HEX);Serial.print(F(" "));
       }
     Serial.println();
-    Serial.print("P: ");Serial.println(FramePort);
+    Serial.print(F("P: "));Serial.println(FramePort);
       
     printDebug();
   #endif
@@ -145,5 +159,6 @@ void transmit(){
      //readIRQ();
   #endif
   
+  FramePort = 0;               // Reset FramePort to zero. Life goes on. Or not?
   toBeOrNotToBe();             // decide to sleep or to wait.
 }

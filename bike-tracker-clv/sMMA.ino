@@ -65,6 +65,9 @@ void readMMA(){
       #if DEBUGINO == 1
         Serial.print("Orientation: ");Serial.println(t);
       #endif
+
+      // TODO make this with INT
+      if ( t == 2 ) { FramePort |= 0x02; } // enable fall FramePort.
       }
       if ( (evntMMA & MSKTAP) == MSKTAP ) {
         t = accel.readTap();
