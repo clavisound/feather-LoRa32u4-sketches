@@ -114,11 +114,11 @@ void readMMA(){
     #endif
    } else if ( intWake == 2 ) {
     #if DEBUGINO == 1
-      Serial.print("SLEEP __ ");
+      Serial.print(F("MMA SLEEP"));
     #endif
    } else {
      #if DEBUGINO == 1
-      Serial.print("Standby -- ");
+      Serial.print(F("MMA Standby"));
     #endif
    }
    

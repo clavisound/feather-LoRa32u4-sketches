@@ -261,7 +261,7 @@ void GPSsleep() {
   #if LED == 3
     // ledDEBUG(1, 1900, 100);
   #else
-    sleepForSeconds(1,2);                       // MTK3339 needs some time. (2000 was fine, 100, 300 hangup)
+    sleepForSeconds(1,2);                       // MTK3339 needs some time. (2000ms was fine, 100ms, 300ms hangup)
   #endif
 }
 
@@ -436,6 +436,9 @@ uint32_t GPStime() {
     while (gps.available( Serial1 )) {        // Read only one character, so you have to call it FAST.
       fix = gps.read();
       noFixCount++;
+      #if DEBUGINO == 1
+        Serial.print(noFixCount);
+      #endif
       
       if ( fix.valid.location ) {               // ... unless we have location. Then we have time.
         

@@ -126,8 +126,6 @@ void transmit(){
   #else
     endTXtime = millis();              // valid for sleep (millis are resetting)
   #endif
-  
-  fc++; // Increase FrameCounter
 
   // calculate the total of transmission duration. This is the end.
   currentTXms = endTXtime - startTXms - 15; // TinyLoRa setup has delays 10 + 5
@@ -153,12 +151,18 @@ void transmit(){
     printDebug();
   #endif
 
+    fc++; // Increase FrameCounter
+
   // EVAL enable INT1 + INT2.
   #if LISDH == 1 | MMA8452 == 1
      //enablePinChange();
      //readIRQ();
   #endif
   
-  FramePort = 0;               // Reset FramePort to zero. Life goes on. Or not?
+  FramePort   = 0;             // Reset FramePort to zero. Life goes on. Or not?
+  
+  // loraData[0] = 0;             // This is used for several things, erase it. BUG: interferes with TXms
+  // TXms.ino: if ( fix.dateTime - GPS_old_time > 30 || fix.hdop == 0 )
+  
   toBeOrNotToBe();             // decide to sleep or to wait.
 }
