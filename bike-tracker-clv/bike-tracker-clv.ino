@@ -3,14 +3,14 @@
 
 // LoRa and LoRaWAN options
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
-#define SECONDS_SLEEP 180  // Send every secs / mins: MAX 65535''/18hours, 7200''/ 2hours', 4200''/ 90', 3600''/ 1hour', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
+#define SECONDS_SLEEP 260  // Send every secs / mins: MAX 65535''/18hours, 7200''/ 2hours', 4200''/ 90', 3600''/ 1hour', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
 // Take care with SF11-SF12! https://lora-alliance.org/sites/default/files/2018-11/Oct122018_NetID_Alloc_Policy_Application_V3.pdf
 // "network providers (such as TTN) are required to actively block devices that always send on SF11 or SF12, to keep their LoRa Alliance NetID."
 #define SF            7     // [default 10] SF7BW125 to SF10BW125. Use 11-12 only for testing, if you are away from gateway. They are forbidden from TTN.
 #define SFB           8      // [default 9] 7 to 10. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
-#define POWER         14     // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but PAY ATTENTION TO THE ANTENNA if +20dBm: You need 1% duty cycle and VWSR ??
+#define POWER         0     // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but PAY ATTENTION TO THE ANTENNA if +20dBm: You need 1% duty cycle and VWSR ??
 #define FRAMECOUNTER  0      // framecounter. We need this variable if we sleep LoRa module forgets everything. TODO store in EEPROM
-#define TWOSF         1      // [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
+#define TWOSF         0      // [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
 #define TTNMAPPING    0    // [default 0, proposed 3000 (HDOP: 3) if you want ttn mapping every 10 messages and IF we have good GPS signal. Additional data to sent: HDOP, sats, altitude
 
 // FEATHER behaviour
@@ -20,8 +20,8 @@
 #define STARTDELAY    2      // [default 2] Boot delay seconds.
 
 // DEVICE SELECTION
-#define GPS                1    // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
-#define MMA8452            1    // [default 1] 0 to disable code for MMA8452 accelerator, 1 to enable.
+#define GPS                0    // [default 1] 0 to use with your smartphone + ttnmapper app. 1 = For adafruit GPS ultimate featherwing
+#define MMA8452            0    // [default 1] 0 to disable code for MMA8452 accelerator, 1 to enable.
 #define LISDH              0    // [default 0] 1 for LIS3DH  accelerator, 0 for no. Adafruit is not suitable for low power unless you de-solder some stuff. +0.7mA in sleeping. But it's not a bad choice if you don't care about the battery life.
 #define GPS_SLEEP_PIN_EN   0    // [default 0] If `1' connect A4 (feather) to EN pin (Ultimate GPS)
 #define GPS_TRANSISTOR_PIN 1    // [default 0] 1 to enable 'transistor' code to bypass EN pin. Using 270R resistor (base) with a PNP transistor. Collector connected to feather 3V3.
@@ -29,7 +29,7 @@
 //#define BUZZER      1     // TODO [default 0] 1 to hear some beeps!
 
 // DEBUG options
-#define DEBUGINO      0     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
+#define DEBUGINO      1     // [default 0] 1 = for debugging via serial. Sleep is OFF! 0 to save some ram and to enable sleep. +3904 bytes of program, +200 bytes of RAM. [default 0]
 #define INDOOR        0     // [default 0] For DEBUG INDOORs (disables slow seeking)
 #define PHONEY        0     // [default 0] 1 = don't TX via Radio LoRa (aka RF) but calculates some phoney TX time. (useful for debugging) [default 0]
 #define LORA_VERB     0     // [default 0] 1 to send verbose (DEBUG) messages via LoRa.
@@ -221,6 +221,7 @@ void setup(){
     while (! Serial); // don't start unless we have serial connection
   #endif
 
+#if GPS == 1
   #if GPS_TRANSISTOR_PIN == 1             // First thing to do, power up GPS
     #define PNP_GPS_PIN A4
     pinMode(PNP_GPS_PIN, OUTPUT);    // Initialize pin LED_BUILTIN as an output
@@ -233,6 +234,7 @@ void setup(){
       Serial.println("\n PNP on");
     #endif
   #endif
+#endif
   
   #if LED > 0
     pinMode(LED_BUILTIN, OUTPUT); // Initialize pin LED_BUILTIN as an output

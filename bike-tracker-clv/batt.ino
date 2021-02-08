@@ -1,5 +1,7 @@
 void checkBatt(){
-  Serial.print(F("\n*BAT"));
+  #if DEBUGINO == 1
+   Serial.print(F("\n*BAT"));
+  #endif
 
     vbat = analogRead(VBATPIN) - 450; // store to 8bit
     
@@ -15,7 +17,11 @@ void checkBatt(){
       } else {
         loraData[0] = map(vbat, 80, 200, 0, 10);  // map 30 -- 150 to 0 -- 10. must fit to 4 bits.
       }
+      #if GPS == 1
       if ( ! fix.valid.location ) { loraData[0] |= 0x80; } // mark that we don't have gps
+      #else 
+      loraData[0] |= 0x80;                                 // mark that we don't have gps
+      #endif
     }
     
     /*

@@ -4,7 +4,9 @@ void setupLora()
   #if DEBUGINO == 1
     Serial.print("\n* LoRa...");
   #endif
-  lora.setChannel(MULTI); // define multi-channel sending or CH0, CH1 to CH7
+  lora.setChannel(CH3); // define multi-channel (MULTI) sending or
+  // CH0 (868.1Mhz), CH1 (868.3Mhz), CH2 (868.5MHz), 
+  // CH3 (867.1MHz), CH4 (867.3MHz), CH5 (867.5MHz), CH6 (867.7MHz), CH7 (867.9MHz)
 
   // TX times as counted by this program. (Yes I also found some results* bizzare)
   // (for 2 bytes) 7:  53ms, 8: 102ms  9: 172ms 10: 338ms 11: 665ms 12: 1161ms
