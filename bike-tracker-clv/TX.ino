@@ -50,7 +50,7 @@ void transmit(){
       uptime = millis();                  // ok with no sleep (millis are not resetting)
     #endif
     #if DEBUGINO == 0
-      uptime += millis();                 // valid for sleep EVAL (millis are resetting)
+      uptime += millis();                 // valid for sleep (millis are resetting)
     #endif
     if ( uptime - endTXtime >= DAY ) {    // we have a new day
       days++;                             // one day more uptime.

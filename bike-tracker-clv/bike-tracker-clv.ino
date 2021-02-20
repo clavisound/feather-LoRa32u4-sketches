@@ -3,13 +3,14 @@
 
 // LoRa and LoRaWAN options
 // ** BE CAREFUL TTN SUGGESTS MINUTES BETWEEN TRANSMISSIONS! **
-#define SECONDS_SLEEP 260  // Send every secs / mins: MAX 65535''/18hours, 7200''/ 2hours', 4200''/ 90', 3600''/ 1hour', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
+// Send every secs / mins: MAX 65535''/18hours, 7200''/ 2hours', 4200''/ 90', 3600''/ 1hour', 1800''/ 30', 1200''/ 20', 600''/ 10', 300''/ 5', 180''/3'
+#define SECONDS_SLEEP 600
 // Take care with SF11-SF12! https://lora-alliance.org/sites/default/files/2018-11/Oct122018_NetID_Alloc_Policy_Application_V3.pdf
 // "network providers (such as TTN) are required to actively block devices that always send on SF11 or SF12, to keep their LoRa Alliance NetID."
 #define SF            7     // [default 10] SF7BW125 to SF10BW125. Use 11-12 only for testing, if you are away from gateway. They are forbidden from TTN.
 #define SFB           8      // [default 9] 7 to 10. Use 11-12 only for testing, if you are away from gateway. They are forbitten from TTN.
-#define POWER         0     // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but PAY ATTENTION TO THE ANTENNA if +20dBm: You need 1% duty cycle and VWSR ??
-#define FRAMECOUNTER  0      // framecounter. We need this variable if we sleep LoRa module forgets everything. TODO store in EEPROM
+#define POWER         -80     // valid values -80, 0-20. For EU limit is 14dBm, for US +20, but PAY ATTENTION TO THE ANTENNA if +20dBm: You need 1% duty cycle and VWSR ??
+#define FRAMECOUNTER  100      // framecounter. We need this variable if we sleep LoRa module forgets everything. TODO store in EEPROM
 #define TWOSF         0      // [default 1]. 0 to send only in defined SF, 1 to send also in SFB when time is odd (semi-random).
 #define TTNMAPPING    0    // [default 0, proposed 3000 (HDOP: 3) if you want ttn mapping every 10 messages and IF we have good GPS signal. Additional data to sent: HDOP, sats, altitude
 

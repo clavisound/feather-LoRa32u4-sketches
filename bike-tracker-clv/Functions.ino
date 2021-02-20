@@ -190,7 +190,19 @@ void toBeOrNotToBe(){
   #if DEBUGINO == 1 & GPS == 0 & ( LISDH == 1 | MMA8452 == 1 )
       Serial.print("Sleeping for: ");Serial.println(secondsSleep);
       #if LED >= 2
-        blinks = ( secondsSleep - ( uptimeGPS - lastTXtime ) ) / 8;
+        blinks = ( secondsSleep - ( uptime - lastTXtime ) ) / 8;
+        ledDEBUG(blinks, 1, 8000); // blink every 8 seconds
+      #endif // LED >= 2
+        
+      #if LED <= 1
+        delay(secondsSleep * 1000);
+      #endif
+  #endif
+
+  #if DEBUGINO == 1 & GPS == 0 & ( LISDH == 0 | MMA8452 == 0 )
+      Serial.print("Sleeping for: ");Serial.println(secondsSleep);
+      #if LED >= 2
+        blinks = ( secondsSleep - ( uptime - lastTXtime ) ) / 8;
         ledDEBUG(blinks, 1, 8000); // blink every 8 seconds
       #endif // LED >= 2
         
@@ -201,7 +213,7 @@ void toBeOrNotToBe(){
 
   #if DEBUGINO == 0 & GPS == 0 & ( LISDH == 1 | MMA8452 == 1 )
       #if LED >= 2
-        blinks = ( secondsSleep - ( uptimeGPS - lastTXtime ) ) / 8;
+        blinks = ( secondsSleep - ( uptime - lastTXtime ) ) / 8;
         ledDEBUG(blinks, 1, 8000); // blink every 8 seconds
       #endif // LED >= 2
         
