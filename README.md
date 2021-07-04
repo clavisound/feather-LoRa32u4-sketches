@@ -1,3 +1,6 @@
+# WARNING: obsolete project
+Since TTN V3, this project is considered hostile to the TTN, since TTN *requires* all the nodes to support MAC commands. This project uses TinyLoRa which does not support MAC commands. SlimLoRa have some support, but it's untested. I think it's fairly easy to port this project to LMIC if you have a MCU with more than 64kB of flash RAM.
+
 # feather-LoRa32u4-sketches
 Here you can find three sketches. Two for [TTNmapper](http://ttnmapper.org). One to use Adafruit Feather LoRa 32u4 with smartphone and one with
 FeatherWing GPS. Extra sketch is a bike tracker.
